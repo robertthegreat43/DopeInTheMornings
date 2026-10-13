@@ -1,0 +1,15 @@
+<h1>Saved Full Lineups</h1>
+
+<div id="lineups"></div>
+
+<script>
+async function loadLineups() {
+    const res = await fetch("/api/full-lineups/");
+    const data = await res.json();
+
+    document.getElementById("lineups").innerHTML =
+        JSON.stringify(data, null, 2);
+}
+
+loadLineups();
+</script>

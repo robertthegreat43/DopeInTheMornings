@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DFS Dashboard</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: #0a1a33;
+            color: #e5e7eb;
+            font-family: system-ui, sans-serif;
+        }
+
+        /* NEW LAYOUT: Camera gets full left side */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr; /* camera is now widest */
+            gap: 1rem;
+            padding: 1rem;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .panel {
+            background: #10254d;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            border: 1px solid #1f3b6e;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        /* CAMERA PANEL — now full-height, wide, left */
+        #cameraPanel {
+            display: flex;
+            flex-direction: column;
+            background: #0f1f3d;
+            height: 100%;
+        }
+
+        #cameraFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: black;
+            border-radius: 0.5rem;
+        }
+
+        .rec-controls {
+            margin-top: 0.75rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .rec-controls button {
+            padding: 0.5rem 1rem;
+            background: #1f3b6e;
+            color: #fff;
+            border: none;
+            border-radius: 0.3rem;
+            cursor: pointer;
+        }
+
+        .rec-controls button:hover {
+            background: #2a4c8a;
+        }
+
+        #recordingStatus {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #9ca3af;
+        }
+
+        /* PLAYERS LIST */
+        .players-list {
+            max-height: calc(100% - 20px);
+            overflow-y: auto;
+        }
+
+        .player-card {
+            background: #0f1f3d;
+            padding: 0.5rem;
+            border-radius: 0.4rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #1f3b6e;
+        }
+
+        .player-name {
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* STATS PANEL */
+        #statsPanel {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            font-size: 1rem;
+            padding: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- CAMERA FIRST (LEFT + WIDE) -->
+    <div class="panel" id="cameraPanel">
+        <video id="cameraFeed" autoplay playsinline></video>
+
+        <div class="rec-controls">
+            <button id="startRecBtn">Start Recording</button>
+            <button id="stopRecBtn">Stop Recording</button>
+        </div>
+
+        <div id="recordingStatus">Not recording</div>
+    </div>
+
+    <!-- PLAYERS (CENTER LEFT) -->
+    <div class="panel">
+        <div class="panel-header">Players</div>
+        <div class="players-list">
+            {% for player in players %}
+                <div class="player-card">
+                    <div class="player-name">{{ player.name }}</div>
+                    <div>Pos: {{ player.position }} | Team: {{ player.team }}</div>
+                    <div>Proj: {{ player.projection }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- STATS (RIGHT) -->
+    <div class="panel">
+        <div class="panel-header">Stats Overview</div>
+
+        <div id="statsPanel">
+            <div id="stat-total-players">Total Players: ...</div>
+            <div id="stat-avg-projection">Average Projection: ...</div>
+            <div id="stat-high-projection">Highest Projection: ...</div>
+            <div id="stat-low-projection">Lowest Projection: ...</div>
+            <div id="stat-total-weeks">Total WeekPerformance Rows: ...</div>
+            <div id="stat-latest-week">Latest Week: ...</div>
+            <div id="stat-top-player">Top Player (Latest Week): ...</div>
+
+            <hr style="border-color:#1f3b6e; margin:0.75rem 0;">
+
+            <div class="panel-header" style="margin-top:0;">Position Breakdown</div>
+            <div id="position-breakdown"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    /* CAMERA STREAM */
+    let stream = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        .then(s => {
+            stream = s;
+            document.getElementById("cameraFeed").srcObject = stream;
+        })
+        .catch(err => console.error("Camera error:", err));
+
+    /* START RECORDING */
+    document.getElementById("startRecBtn").onclick = () => {
+        if (!stream) return;
+
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = e => {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = saveRecording;
+
+        mediaRecorder.start();
+        document.getElementById("recordingStatus").innerText = "Recording...";
+    };
+
+    /* STOP RECORDING */
+    document.getElementById("stopRecBtn").onclick = () => {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+            mediaRecorder.stop();
+            document.getElementById("recordingStatus").innerText = "Stopped";
+        }
+    };
+
+    /* SAVE RECORDING */
+    function saveRecording() {
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = "recording_" + Date.now() + ".webm";
+        document.body.appendChild(a);
+        a.click();
+
+        URL.revokeObjectURL(url);
+    }
+
+    /* STATS PANEL */
+    Promise.all([
+        fetch("/get_week_performance/?t=" + Date.now()).then(res => res.json()),
+        fetch("/get_players/?t=" + Date.now()).then(res => res.json())
+    ]).then(([weekData, playerData]) => {
+
+        document.getElementById("stat-total-players").innerText =
+            "Total Players: " + playerData.length;
+
+        const avgProj = playerData.reduce((sum, p) => sum + (p.projection || 0), 0) / playerData.length;
+        document.getElementById("stat-avg-projection").innerText =
+            "Average Projection: " + avgProj.toFixed(2);
+
+        const highProj = Math.max(...playerData.map(p => p.projection || 0));
+        const highPlayer = playerData.find(p => p.projection === highProj);
+        document.getElementById("stat-high-projection").innerText =
+            `Highest Projection: ${highProj.toFixed(2)} (${highPlayer.name})`;
+
+       // Sort players by projection
+        const sortedPlayers = [...playerData].sort((a, b) => b.projection - a.projection);
+
+        // Top 25 players
+        const top25 = sortedPlayers.slice(0, 25);
+
+        // Lowest projection inside top 25
+        const lowTop25Proj = Math.min(...top25.map(p => p.projection));
+        const lowTop25Player = top25.find(p => p.projection === lowTop25Proj);
+
+        document.getElementById("stat-low-projection").innerText =
+        `Lowest (Top 25): ${lowTop25Proj.toFixed(2)} (${lowTop25Player.name})`;
+
+
+        document.getElementById("stat-total-weeks").innerText =
+            "Total WeekPerformance Rows: " + weekData.length;
+
+        const latestWeek = Math.max(...weekData.map(w => w.week));
+        document.getElementById("stat-latest-week").innerText =
+            "Latest Week: " + latestWeek;
+
+        const latestWeekRows = weekData.filter(w => w.week === latestWeek);
+        const topWeekPoints = Math.max(...latestWeekRows.map(w => w.points));
+        const topWeekPlayer = latestWeekRows.find(w => w.points === topWeekPoints);
+
+        document.getElementById("stat-top-player").innerText =
+            `Top Player (Week ${latestWeek}): ${topWeekPlayer.player_name} (${topWeekPoints} pts)`;
+    });
+
+    /* POSITION BREAKDOWN */
+   fetch("/get_position_breakdown/?t=" + Date.now())
+    .then(res => res.json())
+    .then(data => {
+        const container = document.getElementById("position-breakdown");
+
+        if (!data || data.length === 0) {
+            container.innerHTML = "No position data available.";
+            return;
+        }
+
+        container.innerHTML = "";
+
+        // Get full player list so we can compute top 25 per position
+        fetch("/get_players/?t=" + Date.now())
+            .then(res => res.json())
+            .then(players => {
+
+                // Global Top 25
+                const sorted = [...players].sort((a, b) => b.projection - a.projection);
+                const top25 = sorted.slice(0, 25);
+
+                data.forEach(pos => {
+                    // Filter top 25 players by this position
+                    const top25PosPlayers = top25.filter(p => p.position === pos.position);
+
+                    let lowestTop25Text = "N/A";
+
+                    if (top25PosPlayers.length > 0) {
+                        const lowProj = Math.min(...top25PosPlayers.map(p => p.projection));
+                        const lowPlayer = top25PosPlayers.find(p => p.projection === lowProj);
+
+                        lowestTop25Text = `${lowProj.toFixed(2)} (${lowPlayer.name})`;
+                    }
+
+                    const div = document.createElement("div");
+                    div.style.marginBottom = "0.5rem";
+
+                    div.innerHTML = `
+                        <strong>${pos.position}</strong><br>
+                        Players: ${pos.count}<br>
+                        Avg Projection: ${pos.avg_projection}<br>
+                        Highest: ${pos.highest_projection} (${pos.highest_player})<br>
+                        Lowest: ${pos.lowest_projection} (${pos.lowest_player})<br>
+                        <span style="color:#93c5fd;">Lowest (Top 25): ${lowestTop25Text}</span>
+                    `;
+
+                    container.appendChild(div);
+                });
+            });
+    })
+    .catch(err => {
+        console.error("Position breakdown error:", err);
+        document.getElementById("position-breakdown").innerText =
+            "Error loading position breakdown.";
+    });
+
+</script>
+
+</body>
+</html>

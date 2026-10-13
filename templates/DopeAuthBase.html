@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Dope In The Mornings – Auth</title>
+
+    {% load static %}
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        /* NAVBAR */
+        #top-nav {
+            width: 100%;
+            background: #111;
+            border-bottom: 2px solid #222;
+            padding: 10px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        #top-nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 15px;
+            background: #28a745;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        #top-nav a:hover {
+            background: #34ce57;
+            color: #000;
+        }
+
+        /* AUTH CONTAINER */
+        .auth-container {
+            max-width: 420px;
+            margin: 120px auto;
+            background: rgba(17, 17, 17, 0.9);
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #222;
+            color: #fff;
+        }
+
+        .auth-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #0f0;
+        }
+
+        .auth-container input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+        }
+
+        .auth-container button {
+            width: 100%;
+            padding: 12px;
+            background: #28a745;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .auth-container button:hover {
+            background: #34ce57;
+        }
+    </style>
+</head>
+
+<body style="
+    background-image: url('{% static "images/cleaned_portrait.png" %}');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+">
+    {% include "navbar.html" %}
+
+    <div class="auth-container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="top-nav">
+    <a href="/DopeInTheMornings/">Generate Lines</a>
+    <a href="/full_lineup/">ML Training</a>
+    <a href="/qb/">QB</a>
+    <a href="/rb/">RB</a>
+    <a href="/te/">TE</a>
+    <a href="/dst/">DST</a>
+    <a href="/wr/">WR</a>
+    <a href="/flex/">FLEX</a>
+    <a href="/register/">Register</a>
+    <a href="/login/">Login</a>
+
+    <form action="/logout/" method="post" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" style="
+        background:#28a745;
+        border:none;
+        padding:8px 15px;
+        border-radius:6px;
+        color:#fff;
+        cursor:pointer;
+    ">Logout</button>
+</form>
+
+</div>
+
+<form action="/upload_dk_csv_page/" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="dk_file">
+    <button type="submit">Upload DK CSV</button>
+</form>
+
+
+</body>
+</html>

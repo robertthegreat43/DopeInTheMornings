@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Full Lineup Submission</title>
+    <style>
+        body { background:#111; color:#fff; font-family:Arial; padding:20px; }
+        textarea { width:100%; height:300px; padding:10px; border-radius:6px; }
+        button { background:#00aaff; padding:10px 20px; border:none; border-radius:6px; color:#fff; cursor:pointer; }
+    </style>
+</head>
+
+<body>
+<div id="top-nav">
+    <a href="/DopeInTheMornings/">Generate Lines</a>
+    <a href="/full_lineup/">ML Training</a>
+    <a href="/qb/">QB</a>
+    <a href="/rb/">RB</a>
+    <a href="/te/">TE</a>
+    <a href="/dst/">DST</a>
+    <a href="/wr/">WR</a>
+    <a href="/flex/">FLEX</a>
+    <a href="/register/">Register</a>
+    <a href="/login/">Login</a>
+
+    <form action="/logout/" method="post" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" style="
+        background:#28a745;
+        border:none;
+        padding:8px 15px;
+        border-radius:6px;
+        color:#fff;
+        cursor:pointer;
+    ">Logout</button>
+</form>
+
+</div>
+
+<h1>Submit Full Lineup</h1>
+
+<textarea id="fullLineup" placeholder="Paste full lineup JSON here"></textarea>
+<br><br>
+<button onclick="submitFullLineup()">Submit Full Lineup</button>
+
+<script>
+async function submitFullLineup() {
+    const raw = document.getElementById("fullLineup").value;
+
+    let lineup;
+    try { lineup = JSON.parse(raw); }
+    catch { alert("Invalid JSON"); return; }
+
+    await fetch("/serialize_full_lineup/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(lineup)
+    });
+
+    alert("Full lineup submitted");
+}
+</script>
+
+</body>
+</html>

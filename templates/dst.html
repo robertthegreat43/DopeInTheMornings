@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Defense (DST)</title>
+    <style>
+        body { background:#111; color:#fff; font-family:Arial; padding:20px; }
+
+        .dope-title { text-align:right; font-size:2rem; margin-bottom:20px; }
+        .position-container { background:#1e1e1e; padding:20px; border-radius:10px; width:90%; margin:auto; }
+        textarea { width:100%; height:120px; margin-bottom:10px; border-radius:6px; padding:10px; font-size:1rem; }
+        button { background:#00aaff; border:none; padding:10px 20px; border-radius:6px; color:#fff; cursor:pointer; margin-bottom:20px; }
+        .collapsible-section { margin-top:20px; }
+        .collapsible-toggle { background:#444; padding:10px; border-radius:6px; cursor:pointer; width:100%; text-align:left; }
+        .collapsible-content { display:none; background:#222; padding:15px; margin-top:10px; border-radius:6px; }
+
+    </style>
+</head>
+
+<body>
+<div id="top-nav">
+    <a href="/DopeInTheMornings/">Generate Lines</a>
+    <a href="/full_lineup/">ML Training</a>
+    <a href="/qb/">QB</a>
+    <a href="/rb/">RB</a>
+    <a href="/te/">TE</a>
+    <a href="/dst/">DST</a>
+    <a href="/wr/">WR</a>
+    <a href="/flex/">FLEX</a>
+    <a href="/register/">Register</a>
+    <a href="/login/">Login</a>
+
+    <form action="/logout/" method="post" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" style="
+        background:#28a745;
+        border:none;
+        padding:8px 15px;
+        border-radius:6px;
+        color:#fff;
+        cursor:pointer;
+    ">Logout</button>
+</form>
+
+</div>
+
+
+<h1 class="dope-title">Defense (DST)</h1>
+
+<div class="position-container">
+
+    <h2 style="text-align:right;">Upload Winning DST Lineup</h2>
+    <textarea id="dstWinning" placeholder="Paste DST lineup JSON here"></textarea>
+    <button onclick="trainDST()">Submit Winning DST Lineup</button>
+
+    <h2 style="text-align:right;">Upload Losing DST Lineup</h2>
+    <textarea id="dstLosing" placeholder="Paste DST lineup JSON here"></textarea>
+    <button onclick="serializeDST()">Submit Losing DST Lineup</button>
+
+    <div class="collapsible-section">
+        <button class="collapsible-toggle" onclick="toggleDST()">Show DST Serialized Entries</button>
+        <div class="collapsible-content" id="dstEntries"></div>
+    </div>
+
+</div>
+
+<script>
+async function trainDST() {
+    const raw = document.getElementById("dstWinning").value;
+    let lineup;
+    try { lineup = JSON.parse(raw); } catch { alert("Invalid JSON"); return; }
+
+    await fetch("/train/dst/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lineup })
+    });
+
+    alert("DST winning lineup submitted");
+}
+
+async function serializeDST() {
+    const raw = document.getElementById("dstLosing").value;
+    let lineup;
+    try { lineup = JSON.parse(raw); } catch { alert("Invalid JSON"); return; }
+
+    await fetch("/serialize/dst/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lineup })
+    });
+
+    alert("DST losing lineup submitted");
+}
+
+function toggleDST() {
+    const content = document.getElementById("dstEntries");
+    content.style.display = content.style.display === "block" ? "none" : "block";
+}
+</script>
+
+</body>
+</html>

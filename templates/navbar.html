@@ -1,0 +1,26 @@
+<div id="top-nav">
+    <a href="/DopeInTheMornings/">Generate Lines</a>
+    <a href="/full_lineup/">ML Training</a>
+    <a href="/qb/">QB</a>
+    <a href="/rb/">RB</a>
+    <a href="/te/">TE</a>
+    <a href="/dst/">DST</a>
+    <a href="/wr/">WR</a>
+    <a href="/flex/">FLEX</a>
+    <a href="/register/">Register</a>
+    <a href="/login/">Login</a>
+    <a href="/donations/">Donations</a>
+
+    <form action="/logout/" method="post" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" style="
+        background:#28a745;
+        border:none;
+        padding:8px 15px;
+        border-radius:6px;
+        color:#fff;
+        cursor:pointer;
+    ">Logout</button>
+</form>
+
+</div>

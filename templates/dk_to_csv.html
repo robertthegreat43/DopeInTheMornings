@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload DK CSV</title>
+</head>
+<body>
+    <h1>Upload DK CSV (Week Performance)</h1>
+
+    <form action="/dk_to_csv_page/" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="file" accept=".csv" required>
+        <button type="submit">Upload & Process</button>
+    </form>
+
+
+</body>
+</html>

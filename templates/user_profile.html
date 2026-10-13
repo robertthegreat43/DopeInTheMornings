@@ -1,0 +1,17 @@
+{% extends "DopeAuthBase.html" %}
+
+{% block content %}
+<h2>User Profile</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label>Username</label>
+    <input type="text" name="username" value="{{ user_obj.username }}">
+
+    <label>Email</label>
+    <input type="email" name="email" value="{{ user_obj.email }}">
+
+    <button type="submit">Save Changes</button>
+</form>
+{% endblock %}
