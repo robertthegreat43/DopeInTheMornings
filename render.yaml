@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: dopeinthemornings
+    env: python
+    repo: https://github.com/robertthegreat43/DopeInTheMornings
+    branch: main
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    startCommand: gunicorn Podcastdope.wsgi:application --bind 0.0.0.0:$PORT --workers 3
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: DJANGO_SETTINGS_MODULE
+        value: "Podcastdope.prod"
+      - key: DJANGO_SECRET_KEY
+        # Set this in Render dashboard or Secrets/Databases. Do NOT commit your secret here.
+        value: ""
