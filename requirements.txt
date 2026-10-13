@@ -1,4 +1,4 @@
-pip requirements
+
 Django==6.1.1
 djangorestframework>=3.16.0,<4
 django-cors-headers==4.3.1
