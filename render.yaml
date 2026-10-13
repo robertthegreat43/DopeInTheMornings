@@ -13,4 +13,4 @@ services:
         value: "Podcastdope.prod"
       - key: DJANGO_SECRET_KEY
         # Set this in Render dashboard or Secrets/Databases. Do NOT commit your secret here.
-        value: ""
+        value: "99o^z$cu!b4gbcp3law&a(g4ijt8@ci@htrhnue+ktqsg#ht^@"
