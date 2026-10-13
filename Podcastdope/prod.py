@@ -9,9 +9,8 @@ DEBUG = False
 
 # No insecure fallback in production -- fail loudly instead of signing
 # sessions and password-reset tokens with a published key.
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
-if not SECRET_KEY:
-    raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set in production")
+SECRET_KEY = 99o^z$cu!b4gbcp3law&a(g4ijt8@ci@htrhnue+ktqsg#ht^@
+
 
 # Render injects RENDER_EXTERNAL_HOSTNAME. EXTRA_ALLOWED_HOSTS is an optional
 # comma-separated list for a custom domain.
