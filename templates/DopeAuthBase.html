@@ -13,12 +13,18 @@
             padding: 0;
             color: #fff;
             font-family: Arial, sans-serif;
-            /* use Django static tag so the correct URL is rendered */
-            background-image: url("{% static 'images/cleaned_portrait.png'%} ");
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center center;
-            background-attachment: fixed;
+            /* background image replaced by an <img> element to avoid layout issues when manifest is missing */
+        }
+
+        /* Fullscreen background image (uses the same static asset) */
+        #bg-img {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1; /* placed behind content */
         }
 
         /* NAVBAR */
@@ -93,6 +99,8 @@
 </head>
 
 <body>
+    <!-- Background image as an <img> element to make rendering/debugging easier -->
+    <img id="bg-img" src="{% static 'images/cleaned_portrait.png' %}" alt="background">
     {% include "navbar.html" %}
 
     <div class="auth-container">
