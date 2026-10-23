@@ -1,5 +1,6 @@
+from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import CASCADE
+
 
 # ------------------------------------------------------------
 # Position Choices
@@ -20,10 +21,7 @@ POSITION_CHOICES = [
 # ------------------------------------------------------------
 
 class Player(models.Model):
-    # DraftKings ID (optional, not unique)
     dk_id = models.CharField(max_length=50, null=True, blank=True)
-
-    # Core fields
     name = models.CharField(max_length=100, unique=True)
     position = models.CharField(max_length=10, choices=POSITION_CHOICES)
     team = models.CharField(max_length=10, null=True, blank=True)
@@ -32,7 +30,6 @@ class Player(models.Model):
     salary = models.IntegerField(default=0)
     projection = models.FloatField(default=0.0)
 
-    # DK fields your views expect
     ownership = models.FloatField(null=True, blank=True)
     game = models.CharField(max_length=50, null=True, blank=True)
     week = models.IntegerField(null=True, blank=True)
@@ -76,8 +73,6 @@ class WeekPerformance(models.Model):
 
     def __str__(self):
         return f"{self.player.name} - Week {self.week}: {self.points}"
-
-
 
 
 # ------------------------------------------------------------
@@ -171,9 +166,13 @@ class WinningLineup(models.Model):
 # ------------------------------------------------------------
 
 class UserProfile(models.Model):
-    dsflineups_name067 = models.CharField(max_length=100)
-    dfslineups_password020 = models.CharField(max_length=100)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    dsflineups_name067 = models.CharField(max_length=100, blank=True)
+    dfslineups_password020 = models.CharField(max_length=100, blank=True)
     logged_in756 = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.user.username
 
 
 class DFSLineup(models.Model):
