@@ -502,13 +502,17 @@ class RegisterView(TemplateView):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            UserProfile.objects.get_or_create(
-                user=user,
-                defaults={
-                    "dsflineups_name067": user.username,
-                    "dfslineups_password020": "",
-                },
-            )
+            try:
+                UserProfile.objects.get_or_create(
+                    user=user,
+                    defaults={
+                        "dsflineups_name067": user.username,
+                        "dfslineups_password020": "",
+                    },
+                )
+            except Exception:
+                # Avoid a 500 if the profile table or migration is not ready yet.
+                pass
             return redirect("login")
         return render(request, self.template_name, {"form": form})
 
