@@ -5,18 +5,16 @@ import os
 # Do not point DJANGO_SETTINGS_MODULE at this module directly -- use
 # Podcastdope.dev or Podcastdope.prod, which set DEBUG and ALLOWED_HOSTS.
 
-# Project root: the directory holding manage.py, templates/, db.sqlite3,
-# staticfiles/ and dk_files/.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")  # prod.py requires the env var
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")
 
-DEBUG = False  # overridden in dev.py
+DEBUG = False
 
-ALLOWED_HOSTS = []  # overridden in dev.py and prod.py
+ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
-    'dfslineups.adminconfig.DfslineupsAdminConfig',
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -74,19 +72,13 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-
 MEDIA_ROOT = BASE_DIR / "dk_files"
 MEDIA_URL = "/media/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Auth redirects. These URL names are defined in dfslineups/urls.py.
-# LOGOUT_REDIRECT_URL must be set: LogoutView.get_default_redirect_url()
-# passes it straight to resolve_url() without a None check.
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'profile'
 LOGOUT_REDIRECT_URL = 'login'
 
-# Password reset mails to the console by default; prod.py switches to SMTP
-# when EMAIL_HOST is configured.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

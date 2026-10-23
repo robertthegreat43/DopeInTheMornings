@@ -1,7 +1,7 @@
-from django.contrib import admin, auth
-from django.urls import path, include
+from django.contrib import admin
+from django.urls import include, path
 from django.shortcuts import redirect
-from django.shortcuts import redirect
+
 
 def root_redirect(request):
     return redirect("register")
@@ -9,13 +9,7 @@ def root_redirect(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
-    # Django auth URLs
-    path("accounts/", include(("django.contrib.auth.urls", "auth"), namespace='accounts')),
-
-    # FIRST PAGE → REGISTER
+    path("accounts/", include(("django.contrib.auth.urls", "auth"), namespace="accounts")),
     path('', root_redirect),
-
-    # DFS app
     path('', include('dfslineups.urls')),
 ]
