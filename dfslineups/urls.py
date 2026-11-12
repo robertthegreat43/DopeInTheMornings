@@ -3,6 +3,11 @@ from rest_framework import routers
 from dfslineups import views, api_view
 from dfslineups.api_view import generatelines, get_week_performance, get_players
 from dfslineups.views import user_profile, RegisterView, donations, get_position_breakdown
+from django.urls import path, include
+from rest_framework import routers
+from Lines import views, NBA_apiviews
+from Lines.NBA_apiviews import generatelines, get_week_performance, get_players
+
 
 router = routers.DefaultRouter()
 router.register(r'players', views.PlayerViewSet, basename='players')
@@ -11,6 +16,12 @@ router.register(r'players/rb', views.RunningBackViewSet, basename='runningbacks'
 router.register(r'players/wr', views.WideReceiverViewSet, basename='wide_receivers')
 router.register(r'players/te', views.TightEndViewSet, basename='tight_ends')
 router.register(r'players/dst', views.DefenseViewSet, basename='defenses')
+router.register(r'nba_players', views.PlayerViewSet, basename='nba_players')
+router.register(r'players/pg', views.PointGuardViewSet, basename='pointguard')
+router.register(r'players/sg', views.ShootingGuardViewSet, basename='shootingguard')
+router.register(r'players/f', views.ForwardViewSet, basename='forward')
+router.register(r'players/pf', views.PowerForwardViewSet, basename='power_forward')
+router.register(r'players/cener', views.CenterViewSet, basename='center')
 
 urlpatterns = [
 
@@ -24,6 +35,7 @@ urlpatterns = [
 
     # Master optimized lineup page
     path("DopeInTheMornings/", views.dope_in_the_mornings, name="dope_in_the_mornings"),
+     path("nba_lines/", views.nba_lines, name="NBA_Lines"),
 
     #admin-site urls
     path("accounts/profile/", user_profile, name="profile"),
@@ -60,6 +72,7 @@ urlpatterns = [
 
     # Other paths
     path('video-feed/', views.video_feed, name='video_feed'),
+    path('nba-ticker/', views.nba_news_ticker, name='nba_ticker'),
     path('nfl-ticker/', views.nfl_news_ticker, name='nfl_ticker'),
     path('podcast/', views.podcast_dashboard, name='podcast_dashboard'),
     path('upload_to_dk/', views.upload_to_dk_file, name='upload_to_dk'),
@@ -90,6 +103,7 @@ urlpatterns = [
 
     # Sports news API
     path("get_sports_news/", views.get_sports_news, name="get_sports_news"),
+     path("nba_news/", views.nba_news_ticker, name="nba_news"),
 
 
 
@@ -123,6 +137,32 @@ urlpatterns = [
     path("serialize/wr/", views.serialize_wr, name="serialize_wr"),
     path("serialize/te/", views.serialize_te, name="serialize_te"),
     path("serialize/dst/", views.serialize_dst, name="serialize_dst"),
+    path("serialize/flex/", views.serialize_flex, name="serialize_flex"),
+
+    path("get-serialized-entries/", views.get_serialized_entries, name="get_serialized_entries"),
+
+    # Position pages
+    path("pg/", views.pg_page, name="qb_page"),
+    path("sg/", views.sg_page, name="rb_page"),
+    path("f/", views.f_page, name="wr_page"),
+    path("pf/", views.pf_page, name="te_page"),
+    path("center/", views.center_page, name="dst_page"),
+    path("flex/", views.flex_page, name="flex_page"),
+
+    # Training endpoints
+    path("train/pg/", views.train_pg, name="train_pg"),
+    path("train/sg/", views.train_sg, name="train_sg"),
+    path("train/f/", views.train_pf, name="train_f"),
+    path("train/pf/", views.train_f, name="train_pf"),
+    path("train/center/", views.train_center, name="train_center"),
+    path("train/flex/", views.train_flex, name="train_flex"),
+
+    # Serialization endpoints
+    path("serialize/pg/", views.serialize_pg, name="serialize_pg"),
+    path("serialize/sg/", views.serialize_sg, name="serialize_sg"),
+    path("serialize/f/", views.serialize_f, name="serialize_f"),
+    path("serialize/pf/", views.serialize_pf, name="serialize_pf"),
+    path("serialize/center/", views.serialize_center, name="serialize_center"),
     path("serialize/flex/", views.serialize_flex, name="serialize_flex"),
 ]
 
