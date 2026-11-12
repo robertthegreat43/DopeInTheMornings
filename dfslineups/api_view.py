@@ -204,7 +204,7 @@ from rest_framework.response import Response
 from django.http import FileResponse, Http404
 import os
 
-from Lines.models import Player, SerializedEntry, WeekPerformance
+
 from .lineupgenrator import load_players_from_db, generate_dk_valid_lineup
 from .serializers import PlayerSerializer, WeekPerformanceSerializer
 
