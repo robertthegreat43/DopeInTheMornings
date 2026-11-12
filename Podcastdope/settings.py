@@ -1,17 +1,24 @@
 from pathlib import Path
 import os
 
-# Base settings shared by dev.py and prod.py.
-# Do not point DJANGO_SETTINGS_MODULE at this module directly -- use
-# Podcastdope.dev or Podcastdope.prod, which set DEBUG and ALLOWED_HOSTS.
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")
 
-DEBUG = False
+def get_env_bool(name, default=False):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
 
-ALLOWED_HOSTS = []
+
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or "dev-secret-key"
+DEBUG = get_env_bool("DEBUG", False)
+
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    if host.strip()
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -67,7 +74,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
