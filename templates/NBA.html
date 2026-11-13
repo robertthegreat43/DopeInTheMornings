@@ -115,10 +115,17 @@
       }
 
       function loadNews() {
-        fetch("/get_sports_news/?t=" + Date.now())
+        fetch("/get_nba_news/?t=" + Date.now())
           .then(res => res.json())
           .then(data => {
             const container = document.getElementById("news-container");
+
+            if (data.error) {
+              container.innerHTML = "Unable to load NBA news right now.";
+              console.error(data.error);
+              return;
+            }
+
             if (!data.news || data.news.length === 0) {
               container.innerHTML = "No sports news available.";
               return;
@@ -131,7 +138,7 @@
               div.innerHTML = `
                 <strong>${article.title}</strong><br>
                 <em>${article.source}</em><br>
-                ${article.snippet}<br>
+                ${article.snippet || ""}<br>
                 <a href="${article.url}" target="_blank" style="color:#34ce57;">Read more</a>
               `;
               container.appendChild(div);
