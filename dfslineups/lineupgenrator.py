@@ -1,147 +1,88 @@
+import os
+import django
 import random
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Podcastdope.dev")
+django.setup()
 
-NFL_SLOTS = (
-    ("QB", {"QB"}),
-    ("RB", {"RB"}),
-    ("RB", {"RB"}),
-    ("WR", {"WR"}),
-    ("WR", {"WR"}),
-    ("WR", {"WR"}),
-    ("TE", {"TE"}),
-    ("FLEX", {"RB", "WR", "TE"}),
-    ("DST", {"DST", "DEF"}),
-)
-
-
-def position_tokens(position):
-    """Normalize common CSV position formats such as RB/WR or DEF."""
-    aliases = {
-        "DEFENSE": "DST",
-        "DEFENCE": "DST",
-        "D/ST": "DST",
-        "POINTGUARD": "PG",
-        "POINT GUARD": "PG",
-        "SHOOTINGGUARD": "SG",
-        "SHOOTING GUARD": "SG",
-        "SMALLFORWARD": "SF",
-        "SMALL FORWARD": "SF",
-        "POWERFORWARD": "PF",
-        "POWER FORWARD": "PF",
-        "CENTER": "C",
-    }
-    tokens = (position or "").upper().replace(",", "/").split("/")
-    normalized = set()
-    for token in tokens:
-        token = " ".join(token.strip().split())
-        if token:
-            normalized.add(aliases.get(token, token))
-    return normalized
+from dfslineups.models import Player
 
 
 def load_players_from_db():
-    """Load roster entries previously imported from the uploaded salary CSV."""
-    from dfslineups.models import Player
-
     return list(Player.objects.all().values(
         "name", "position", "team", "salary", "projection"
     ))
 
 
-def nfl_position_issues(players):
-    """Return missing/insufficient NFL roster positions for a DraftKings lineup."""
-    counts = {"QB": 0, "RB": 0, "WR": 0, "TE": 0, "DST": 0}
-    for player in players:
-        positions = position_tokens(player.get("position"))
-        for position in counts:
-            if position in positions or (position == "DST" and "DEF" in positions):
-                counts[position] += 1
+def has_pos(player, pos):
+    return pos in player["position"]
 
-    needs = {"QB": 1, "RB": 2, "WR": 3, "TE": 1, "DST": 1}
-    return [f"{position} (need {needed}, found {counts[position]})"
-            for position, needed in needs.items() if counts[position] < needed]
+def generate_dk_valid_lineup(players):
+    # Position pools
+    qbs = [p for p in players if has_pos(p, "QB")]
+    rbs = [p for p in players if has_pos(p, "RB")]
+    wrs = [p for p in players if has_pos(p, "WR")]
+    tes = [p for p in players if has_pos(p, "TE")]
+    dsts = [p for p in players if has_pos(p, "DST")]
 
+    flex_pool = rbs + wrs + tes  # FLEX cannot be QB o
+    # r DST
 
-def generate_dk_valid_lineup(players, salary_cap=50000, max_nodes=100000):
-    """Find a unique-player NFL DraftKings lineup satisfying roster and salary rules."""
-    if nfl_position_issues(players):
+    # Safety checks
+    if len(qbs) < 2 or len(rbs) < 2 or len(wrs) < 3 or len(tes) < 1 or len(dsts) < 1:
+        print("ERROR: Not enough players for DK rules.")
         return None
 
-    slots = list(NFL_SLOTS)
-    best_lineup = None
-    best_projection = float("-inf")
-    nodes = 0
+    # Try generating until salary cap AND projection rules are valid
+    for _ in range(100000):  # try up to 1000 times
+        qb = random.choice(qbs)
+        rb1, rb2 = random.sample(rbs, 2)
+        wr1, wr2, wr3 = random.sample(wrs, 3)
+        te = random.choice(tes)
+        dst = random.choice(dsts)
 
-    def search(remaining, chosen, used, salary, projection):
-        nonlocal best_lineup, best_projection, nodes
-        if nodes >= max_nodes:
-            return
-        if not remaining:
-            if projection > best_projection:
-                best_projection = projection
-                best_lineup = [chosen[slot] for slot, _ in slots]
-            return
+        # FLEX must not duplicate any player
+        flex_candidates = [p for p in flex_pool if p not in [rb1, rb2, wr1, wr2, wr3, te]]
+        if not flex_candidates:
+            continue
 
-        # Pick the most constrained remaining slot first. This still returns the
-        # lineup in the original QB/RB/WR/TE/FLEX/DST order above.
-        options = []
-        for slot_index, (slot, eligible_positions) in enumerate(remaining):
-            candidates = [
-                player for player in players
-                if id(player) not in used
-                and position_tokens(player.get("position")) & eligible_positions
-                and salary + int(player.get("salary") or 0) <= salary_cap
-            ]
-            options.append((len(candidates), slot_index, slot, candidates))
-        _, slot_index, slot, candidates = min(options, key=lambda item: item[0])
-        if not candidates:
-            return
+        flex = random.choice(flex_candidates)
 
-        candidates.sort(key=lambda player: float(player.get("projection") or 0), reverse=True)
-        next_remaining = remaining[:slot_index] + remaining[slot_index + 1:]
-        for player in candidates:
-            nodes += 1
-            player_salary = int(player.get("salary") or 0)
-            player_projection = float(player.get("projection") or 0)
-            chosen[slot] = player
-            used.add(id(player))
-            search(next_remaining, chosen, used,
-                   salary + player_salary, projection + player_projection)
-            used.remove(id(player))
-            del chosen[slot]
-            if nodes >= max_nodes:
-                break
+        lineup = [qb, rb1, rb2, wr1, wr2, wr3, te, flex, dst]
 
-    search(slots, {}, set(), 0, 0.0)
-    return best_lineup
+        total_salary = sum(p["salary"] for p in lineup)
+        total_proj = sum(p["projection"] for p in lineup)
+
+        # DK rules:
+        if total_salary <= 50000 and total_proj >= 120 :
+            return lineup
+
+    print("Could not generate DK-valid lineup within salary cap + projection ≥ 200.")
+    return None
+
+
+
 
 
 def print_lineup(lineup, number):
     print(f"\n================ DK LINEUP {number} ================")
-    total_salary = sum(int(player.get("salary") or 0) for player in lineup)
-    total_projection = sum(float(player.get("projection") or 0) for player in lineup)
-    for player in lineup:
-        print(
-            f"{player['position']:8}  {player['name']:25}  "
-            f"${int(player.get('salary') or 0):5}  "
-            f"proj={float(player.get('projection') or 0)}"
-        )
+    total_salary = sum(p["salary"] for p in lineup)
+    total_proj = sum(p["projection"] for p in lineup)
+
+    for p in lineup:
+        print(f"{p['position']:8}  {p['name']:25}  ${p['salary']:5}  proj={p['projection']}")
+
     print("-----------------------------------------------")
     print("Total Salary:", total_salary)
-    print("Total Projection:", total_projection)
+    print("Total Projection:", total_proj)
     print("===============================================\n")
 
 
 if __name__ == "__main__":
-    import os
-    import django
-
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Podcastdope.dev")
-    django.setup()
     players = load_players_from_db()
     print("Loaded", len(players), "players from database.")
-    lineup = generate_dk_valid_lineup(players)
-    if lineup:
-        print_lineup(lineup, 1)
-    else:
-        print("Could not generate an NFL lineup: check DraftKings position and salary rules.")
+
+    for i in range(1, 6):
+        lineup = generate_dk_valid_lineup(players)
+        if lineup:
+            print_lineup(lineup, i)
