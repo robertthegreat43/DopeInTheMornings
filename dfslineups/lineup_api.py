@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
 
+from .lineupgenrator import generate_dk_valid_lineup, load_players_from_db
 from .models import Player
 
 
@@ -44,43 +45,32 @@ def _serialize_lineup(slots, lineup):
 
 @require_GET
 def generate_nfl_lines(request):
-    """Generate a DraftKings-style NFL lineup from NFL-position players."""
-    players = list(Player.objects.all())
-    pools = {
-        "QB": [p for p in players if "QB" in _position_tokens(p.position)],
-        "RB": [p for p in players if "RB" in _position_tokens(p.position)],
-        "WR": [p for p in players if "WR" in _position_tokens(p.position)],
-        "TE": [p for p in players if "TE" in _position_tokens(p.position)],
-        "DST": [p for p in players if _position_tokens(p.position) & {"DST", "DEF"}],
-    }
-    if not all(pools.values()) or len(pools["RB"]) < 2 or len(pools["WR"]) < 3:
-        return JsonResponse({"error": "Not enough NFL players in the player database to build a lineup."}, status=400)
+    """Use the existing NFL generator against the players loaded from the CSV."""
+    players = load_players_from_db()
+    lineup = generate_dk_valid_lineup(players)
+    if not lineup:
+        return JsonResponse({
+            "error": (
+                "Could not generate an NFL lineup from the uploaded player CSV. "
+                "Check that it has enough QB, RB, WR, TE, and DST players with "
+                "valid salary and projection values."
+            )
+        }, status=400)
 
-    best = None
-    for _ in range(3000):
-        qb = random.choice(pools["QB"])
-        rbs = random.sample(pools["RB"], 2)
-        wrs = random.sample(pools["WR"], 3)
-        te = random.choice(pools["TE"])
-        dst = random.choice(pools["DST"])
-        selected = [qb, *rbs, *wrs, te, dst]
-        flex_pool = [p for p in pools["RB"] + pools["WR"] + pools["TE"] if p not in selected]
-        if not flex_pool:
-            continue
-        flex = random.choice(flex_pool)
-        lineup = [qb, *rbs, *wrs, te, flex, dst]
-        salary = sum(int(p.salary or 0) for p in lineup)
-        if salary > 50000:
-            continue
-        projection = sum(float(p.projection or 0) for p in lineup)
-        if best is None or projection > best[0]:
-            best = (projection, lineup)
-
-    if best is None:
-        return JsonResponse({"error": "Could not build an NFL lineup under the $50,000 salary cap."}, status=400)
-
-    result = _serialize_lineup(("QB", "RB", "RB", "WR", "WR", "WR", "TE", "FLEX", "DST"), best[1])
-    return JsonResponse(result)
+    return JsonResponse({
+        "players": [
+            {
+                "position": player["position"],
+                "name": player["name"],
+                "team": player.get("team"),
+                "salary": int(player["salary"] or 0),
+                "projection": float(player["projection"] or 0),
+            }
+            for player in lineup
+        ],
+        "total_salary": sum(int(player["salary"] or 0) for player in lineup),
+        "total_projection": sum(float(player["projection"] or 0) for player in lineup),
+    })
 
 
 @require_GET
