@@ -5,9 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>NBA Lineups</title>
     <style>
-      body { margin: 0; padding: 0; background: #0d0d0d; color: #fff; font-family: Arial, sans-serif; display: flex; height: 100vh; overflow: hidden; }
-      #top-nav { width: 100%; background: #111; border-bottom: 2px solid #222; padding: 10px; position: fixed; top: 0; left: 0; z-index: 1000; }
-      #top-nav a { color: #fff; text-decoration: none; padding: 8px 15px; background: #28a745; border-radius: 6px; transition: 0.2s; margin-right: 8px; }
+      body {
+        margin: 0;
+        padding: 0;
+        background: #0d0d0d;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+      }
+      #top-nav {
+        width: 100%;
+        background: #111;
+        border-bottom: 2px solid #222;
+        padding: 10px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+      }
+      #top-nav a {
+        color: #fff;
+        text-decoration: none;
+        padding: 8px 15px;
+        background: #28a745;
+        border-radius: 6px;
+        transition: 0.2s;
+        margin-right: 8px;
+      }
       #top-nav a:hover { background: #34ce57; color: #000; }
       #dfs-sidebar { width: 380px; background: #111; border-right: 2px solid #222; padding: 20px; overflow-y: auto; margin-top: 50px; }
       #dfs-sidebar h2 { margin-top: 0; font-size: 22px; letter-spacing: 1px; color: #0f0; }
@@ -25,19 +51,30 @@
   <body>
     <div id="top-nav">
       <a href="/DopeInTheMornings/">Dope In The Mornings</a>
-      <a href="/pg/">PG</a><a href="/sg/">SG</a><a href="/f/">F</a>
-      <a href="/pf/">PF</a><a href="/center/">C</a>
-      <a href="/register/">Register</a><a href="/login/">Login</a><a href="/logout/">Logout</a>
+      <a href="/pg/">PG</a>
+      <a href="/sg/">SG</a>
+      <a href="/f/">F</a>
+      <a href="/pf/">PF</a>
+      <a href="/center/">C</a>
+      <a href="/register/">Register</a>
+      <a href="/login/">Login</a>
+      <a href="/logout/">Logout</a>
     </div>
+
     <div id="dfs-sidebar">
       <h2>NBA Lineups</h2>
       <button id="generate-btn" onclick="generateLineups()">Generate NBA Lineups</button>
       <div id="lineup-results"></div>
     </div>
+
     <div id="main-content">
       <div id="header">NBA Dashboard</div>
-      <div id="news-section"><h2>Latest NBA News</h2><div id="news-container">Loading news...</div></div>
+      <div id="news-section">
+        <h2>Latest Sports News</h2>
+        <div id="news-container"></div>
+      </div>
     </div>
+
     <script>
       function generateLineups() {
         fetch("/api/nba/generatelines/")
@@ -45,15 +82,31 @@
           .then(data => {
             const container = document.getElementById("lineup-results");
             container.innerHTML = "";
+
             if (data.error) {
               container.innerHTML = '<div class="lineup-card"><h3>NBA Lineup Error</h3><p>' + data.error + '</p></div>';
               return;
             }
-            let html = `<div class="lineup-card"><h3>Generated NBA Lineup</h3><p>Total Salary: $${data.total_salary}</p><p>Total Projection: ${data.total_projection}</p><hr>`;
+
+            let html = `
+              <div class="lineup-card">
+                <h3>Generated NBA Lineup</h3>
+                <p>Total Salary: $${data.total_salary}</p>
+                <p>Total Projection: ${data.total_projection}</p>
+                <hr>
+            `;
+
             data.players.forEach(p => {
-              html += `<div class="player-row"><span><strong>${p.slot}</strong> - ${p.name}</span><span>$${p.salary} | ${p.projection}</span></div>`;
+              html += `
+                <div class="player-row">
+                  <span><strong>${p.slot}</strong> - ${p.name}</span>
+                  <span>$${p.salary} | ${p.projection}</span>
+                </div>
+              `;
             });
-            container.innerHTML = html + "</div>";
+
+            html += "</div>";
+            container.innerHTML = html;
           })
           .catch(err => {
             console.error("Generate NBA lineup error:", err);
@@ -61,39 +114,35 @@
           });
       }
 
-      async function loadNews() {
-        const container = document.getElementById("news-container");
-        try {
-          const response = await fetch("/nba-news/?t=" + Date.now());
-          if (!response.ok) throw new Error(`News request failed (${response.status})`);
-          const data = await response.json();
-          if (!data.news || data.news.length === 0) {
-            container.textContent = "No NBA news available right now.";
-            return;
-          }
-          container.replaceChildren();
-          data.news.forEach(article => {
-            const item = document.createElement("div");
-            item.className = "news-item";
-            const title = document.createElement("strong");
-            title.textContent = article.title;
-            const source = document.createElement("em");
-            source.textContent = article.source;
-            const link = document.createElement("a");
-            link.href = article.url;
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-            link.textContent = "Read more";
-            link.style.color = "#34ce57";
-            item.append(title, document.createElement("br"), source, document.createElement("br"));
-            item.append(document.createTextNode(article.snippet || ""), document.createElement("br"), link);
-            container.appendChild(item);
+      function loadNews() {
+        fetch("/get_sports_news/?t=" + Date.now())
+          .then(res => res.json())
+          .then(data => {
+            const container = document.getElementById("news-container");
+            if (!data.news || data.news.length === 0) {
+              container.innerHTML = "No sports news available.";
+              return;
+            }
+
+            container.innerHTML = "";
+            data.news.forEach(article => {
+              const div = document.createElement("div");
+              div.className = "news-item";
+              div.innerHTML = `
+                <strong>${article.title}</strong><br>
+                <em>${article.source}</em><br>
+                ${article.snippet}<br>
+                <a href="${article.url}" target="_blank" style="color:#34ce57;">Read more</a>
+              `;
+              container.appendChild(div);
+            });
+          })
+          .catch(err => {
+            console.error("Sports news error:", err);
+            document.getElementById("news-container").innerText = "Error loading sports news.";
           });
-        } catch (error) {
-          console.error("NBA news error:", error);
-          container.textContent = "Error loading NBA news. Please try again later.";
-        }
       }
+
       loadNews();
     </script>
   </body>

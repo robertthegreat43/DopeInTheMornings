@@ -72,8 +72,8 @@
     <div id="main-content">
       <div id="header">Dope In The Mornings</div>
       <div id="news-section">
-        <h2>Latest NFL News</h2>
-        <div id="news-container" aria-live="polite">Loading NFL news...</div>
+        <h2>Latest Sports News</h2>
+        <div id="news-container"></div>
       </div>
     </div>
 
@@ -116,44 +116,33 @@
           });
       }
 
-      async function loadNews() {
-        const container = document.getElementById("news-container");
-        try {
-          // This Django endpoint serves free ESPN RSS news; no API key or paid plan is needed.
-          const response = await fetch("/get_sports_news/?t=" + Date.now());
-          if (!response.ok) throw new Error(`News request failed (${response.status})`);
-          const data = await response.json();
-          if (!Array.isArray(data.news) || data.news.length === 0) {
-            container.textContent = "No NFL news available right now.";
-            return;
-          }
-
-          container.replaceChildren();
-          data.news.forEach(article => {
-            const item = document.createElement("div");
-            item.className = "news-item";
-            const title = document.createElement("strong");
-            title.textContent = article.title || "Untitled";
-            const source = document.createElement("em");
-            source.textContent = article.source || "ESPN";
-            const link = document.createElement("a");
-            link.href = article.url || "#";
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-            link.textContent = "Read more";
-            link.style.color = "#34ce57";
-
-            item.append(title, document.createElement("br"), source, document.createElement("br"));
-            if (article.snippet) {
-              item.append(document.createTextNode(article.snippet), document.createElement("br"));
+      function loadNews() {
+        fetch("/get_sports_news/?t=" + Date.now())
+          .then(res => res.json())
+          .then(data => {
+            const container = document.getElementById("news-container");
+            if (!data.news || data.news.length === 0) {
+              container.innerHTML = "No sports news available.";
+              return;
             }
-            item.append(link);
-            container.appendChild(item);
+
+            container.innerHTML = "";
+            data.news.forEach(article => {
+              const div = document.createElement("div");
+              div.className = "news-item";
+              div.innerHTML = `
+                <strong>${article.title}</strong><br>
+                <em>${article.source}</em><br>
+                ${article.snippet}<br>
+                <a href="${article.url}" target="_blank" style="color:#34ce57;">Read more</a>
+              `;
+              container.appendChild(div);
+            });
+          })
+          .catch(err => {
+            console.error("Sports news error:", err);
+            document.getElementById("news-container").innerText = "Error loading sports news.";
           });
-        } catch (error) {
-          console.error("NFL news error:", error);
-          container.textContent = "Error loading NFL news. Please try again later.";
-        }
       }
 
       loadNews();
