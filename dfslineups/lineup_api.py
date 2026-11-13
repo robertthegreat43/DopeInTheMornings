@@ -89,8 +89,13 @@ def _nba_position_tokens(position):
     return tokens
 
 
-def _find_nba_lineup(players, salary_cap=50000, max_nodes=100000):
-    """Find a unique-player NBA DK lineup with exact slot eligibility and cap."""
+def _find_nba_lineup(players, salary_cap=50000, max_nodes=4000):
+    """Find a unique-player NBA DK lineup with exact slot eligibility and cap.
+
+    The node limit keeps this request bounded under Gunicorn. The previous
+    exhaustive search could explore a combinatorial number of lineups and get
+    killed by Gunicorn's request timeout before returning a response.
+    """
     eligible_by_slot = {
         slot: [player for player in players
                if _nba_position_tokens(player.position) & eligible_positions]
@@ -100,6 +105,9 @@ def _find_nba_lineup(players, salary_cap=50000, max_nodes=100000):
     if missing:
         return None, missing
 
+    # Cache numeric fields once rather than converting model values at each node.
+    salaries = {player.pk: int(player.salary or 0) for player in players}
+    projections = {player.pk: float(player.projection or 0) for player in players}
     best_assignment = None
     best_projection = float("-inf")
     nodes = 0
@@ -114,19 +122,20 @@ def _find_nba_lineup(players, salary_cap=50000, max_nodes=100000):
                 best_assignment = assignment.copy()
             return
 
+        # Choose the slot with the fewest currently eligible players first.
         options = []
         for slot, _eligible_positions in remaining:
             candidates = [
                 player for player in eligible_by_slot[slot]
                 if player.pk not in used
-                and salary + int(player.salary or 0) <= salary_cap
+                and salary + salaries[player.pk] <= salary_cap
             ]
             options.append((len(candidates), slot, candidates))
         _, slot, candidates = min(options, key=lambda item: item[0])
         if not candidates:
             return
 
-        candidates.sort(key=lambda player: float(player.projection or 0), reverse=True)
+        candidates.sort(key=lambda player: projections[player.pk], reverse=True)
         next_remaining = [item for item in remaining if item[0] != slot]
         for player in candidates:
             nodes += 1
@@ -136,8 +145,8 @@ def _find_nba_lineup(players, salary_cap=50000, max_nodes=100000):
                 next_remaining,
                 assignment,
                 used,
-                salary + int(player.salary or 0),
-                projection + float(player.projection or 0),
+                salary + salaries[player.pk],
+                projection + projections[player.pk],
             )
             used.remove(player.pk)
             del assignment[slot]
