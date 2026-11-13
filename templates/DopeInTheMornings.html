@@ -1,14 +1,9 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
-
     <title>Dope In The Mornings</title>
-
     <style>
         body {
             margin: 0;
@@ -21,7 +16,6 @@
             overflow: hidden;
         }
 
-        /* Top Nav Bar */
         #top-nav {
             width: 100%;
             background: #111;
@@ -47,7 +41,6 @@
             color: #000;
         }
 
-        /* Left DFS Sidebar */
         #dfs-sidebar {
             width: 380px;
             background: #111;
@@ -105,7 +98,6 @@
             border-bottom: none;
         }
 
-        /* Main Content */
         #main-content {
             flex: 1;
             padding: 20px;
@@ -121,7 +113,6 @@
             letter-spacing: 1px;
         }
 
-        /* News Section */
         #news-section {
             background: #111;
             padding: 20px;
@@ -184,8 +175,6 @@
 </head>
 
 <body>
-
-    <!-- TOP NAV BAR -->
     <div id="top-nav">
         <a href="/full_lineup/">ML Training</a>
         <a href="/qb/">QB</a>
@@ -197,37 +186,24 @@
         <a href="/register/">Register</a>
         <a href="/login/">Login</a>
         <a href="/loggged_out/">Logout</a>
-
     </div>
 
-
-
-    <!-- LEFT DFS SIDEBAR -->
     <div id="dfs-sidebar">
         <h2>DFS Lineups</h2>
-
-        <button id="generate-btn" onclick="generateLineups()">
-            Generate New Lineups
-        </button>
-
+        <button id="generate-btn" onclick="generateLineups()">Generate New Lineups</button>
         <div id="lineup-results"></div>
     </div>
 
-    <!-- MAIN CONTENT -->
     <div id="main-content">
         <div id="header">Dope In The Mornings</div>
 
-        <!-- NEWS SECTION -->
         <div id="news-section">
             <h2>Latest Sports News</h2>
             <div id="news-container"></div>
         </div>
-
-        <!-- CHATBOT SECTION -->
     </div>
 
     <script>
-        /* ---------------- DFS LINEUP GENERATOR ---------------- */
         function generateLineups() {
             fetch("/api/generatelines/")
                 .then(response => response.json())
@@ -257,50 +233,43 @@
                 });
         }
 
-        /* ---------------- NEWS FETCHER ---------------- */
-    fetch("/get_sports_news/?t=" + Date.now())
-    .then(res => res.json())
-    .then(data => {
-        const container = document.getElementById("news-container");
+        function loadNews() {
+            fetch("/get_sports_news/?t=" + Date.now())
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById("news-container");
 
-        if (!data.news || data.news.length === 0) {
-            container.innerHTML = "No sports news available.";
-            return;
+                if (data.error) {
+                    container.innerHTML = "Unable to load sports news right now.";
+                    console.error(data.error);
+                    return;
+                }
+
+                if (!data.news || data.news.length === 0) {
+                    container.innerHTML = "No sports news available.";
+                    return;
+                }
+
+                container.innerHTML = "";
+                data.news.forEach(article => {
+                    const div = document.createElement("div");
+                    div.className = "news-item";
+                    div.innerHTML = `
+                        <strong>${article.title}</strong><br>
+                        <em>${article.source}</em><br>
+                        ${article.snippet || ""}<br>
+                        <a href="${article.url}" target="_blank" style="color:#34ce57;">Read more</a>
+                    `;
+                    container.appendChild(div);
+                });
+            })
+            .catch(err => {
+                console.error("Sports news error:", err);
+                document.getElementById("news-container").innerText = "Error loading sports news.";
+            });
         }
 
-        container.innerHTML = "";
-
-        data.news.forEach(article => {
-            const div = document.createElement("div");
-            div.className = "news-item";
-
-            div.innerHTML = `
-                <strong>${article.title}</strong><br>
-                <em>${article.source}</em><br>
-                ${article.snippet}<br>
-                <a href="${article.url}" target="_blank" style="color:#34ce57;">Read more</a>
-            `;
-
-            container.appendChild(div);
-        });
-    })
-    .catch(err => {
-        console.error("Sports news error:", err);
-        document.getElementById("news-container").innerText =
-            "Error loading sports news.";
-    });
-
-
-
-        /* ---------------- CHATBOT ---------------- */
-
-
-
-
-
-        /* Load news on page load */
         loadNews();
     </script>
-
 </body>
 </html>
