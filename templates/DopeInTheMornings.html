@@ -5,271 +5,138 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Dope In The Mornings</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #0d0d0d;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        #top-nav {
-            width: 100%;
-            background: #111;
-            border-bottom: 2px solid #222;
-            padding: 10px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1000;
-        }
-
-        #top-nav a {
-            color: #fff;
-            text-decoration: none;
-            padding: 8px 15px;
-            background: #28a745;
-            border-radius: 6px;
-            transition: 0.2s;
-        }
-
-        #top-nav a:hover {
-            background: #34ce57;
-            color: #000;
-        }
-
-        #dfs-sidebar {
-            width: 380px;
-            background: #111;
-            border-right: 2px solid #222;
-            padding: 20px;
-            overflow-y: auto;
-            margin-top: 50px;
-        }
-
-        #dfs-sidebar h2 {
-            margin-top: 0;
-            font-size: 22px;
-            letter-spacing: 1px;
-            color: #0f0;
-        }
-
-        #generate-btn {
-            width: 100%;
-            padding: 12px;
-            background: #28a745;
-            border: none;
-            border-radius: 6px;
-            color: #fff;
-            font-size: 16px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: 0.2s;
-        }
-
-        #generate-btn:hover {
-            background: #34ce57;
-        }
-
-        .lineup-card {
-            background: #1a1a1a;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #333;
-        }
-
-        .lineup-card h3 {
-            margin: 0 0 10px 0;
-            color: #0f0;
-        }
-
-        .player-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 0;
-            border-bottom: 1px solid #222;
-        }
-
-        .player-row:last-child {
-            border-bottom: none;
-        }
-
-        #main-content {
-            flex: 1;
-            padding: 20px;
-            background: #0d0d0d;
-            margin-top: 50px;
-            overflow-y: auto;
-        }
-
-        #header {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            letter-spacing: 1px;
-        }
-
-        #news-section {
-            background: #111;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-
-        .news-item {
-            border-bottom: 1px solid #333;
-            padding: 10px 0;
-        }
-
-        .news-item:last-child {
-            border-bottom: none;
-        }
-
-       .auth-container {
-    max-width: 420px;
-    margin: 40px auto;
-    background: #111;
-    padding: 25px;
-    border-radius: 10px;
-    border: 1px solid #222;
-    color: #fff;
-}
-
-.auth-container h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #0f0;
-}
-
-.auth-container input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 6px;
-    color: #fff;
-}
-
-.auth-container button {
-    width: 100%;
-    padding: 12px;
-    background: #28a745;
-    border: none;
-    border-radius: 6px;
-    color: #fff;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.auth-container button:hover {
-    background: #34ce57;
-}
-
+      body { margin: 0; padding: 0; background: #0d0d0d; color: #fff; font-family: Arial, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+      #top-nav { width: 100%; background: #111; border-bottom: 2px solid #222; padding: 10px; position: fixed; top: 0; left: 0; z-index: 1000; }
+      #top-nav a { color: #fff; text-decoration: none; padding: 8px 15px; background: #28a745; border-radius: 6px; transition: 0.2s; }
+      #top-nav a:hover { background: #34ce57; color: #000; }
+      #dfs-sidebar { width: 380px; background: #111; border-right: 2px solid #222; padding: 20px; overflow-y: auto; margin-top: 50px; }
+      #dfs-sidebar h2 { margin-top: 0; font-size: 22px; letter-spacing: 1px; color: #0f0; }
+      #generate-btn { width: 100%; padding: 12px; background: #28a745; border: none; border-radius: 6px; color: #fff; font-size: 16px; cursor: pointer; margin-bottom: 20px; transition: 0.2s; }
+      #generate-btn:hover { background: #34ce57; }
+      .lineup-card { background: #1a1a1a; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #333; }
+      .lineup-card h3 { margin: 0 0 10px 0; color: #0f0; }
+      .player-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #222; }
+      .player-row:last-child { border-bottom: none; }
+      #main-content { flex: 1; padding: 20px; background: #0d0d0d; margin-top: 50px; overflow-y: auto; }
+      #header { font-size: 28px; font-weight: bold; margin-bottom: 20px; letter-spacing: 1px; }
+      #news-section { background: #111; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
+      .news-item { border-bottom: 1px solid #333; padding: 10px 0; }
+      .news-item:last-child { border-bottom: none; }
     </style>
-</head>
-
-<body>
+  </head>
+  <body>
     <div id="top-nav">
-        <a href="/full_lineup/">ML Training</a>
-        <a href="/qb/">QB</a>
-        <a href="/rb/">RB</a>
-        <a href="/te/">TE</a>
-        <a href="/dst/">DST</a>
-        <a href="/wr/">WR</a>
-        <a href="/flex/">FLEX</a>
-        <a href="/register/">Register</a>
-        <a href="/login/">Login</a>
-        <a href="/loggged_out/">Logout</a>
+      <a href="/full_lineup/">ML Training</a>
+      <a href="/qb/">QB</a>
+      <a href="/rb/">RB</a>
+      <a href="/te/">TE</a>
+      <a href="/dst/">DST</a>
+      <a href="/wr/">WR</a>
+      <a href="/flex/">FLEX</a>
+      <a href="/register/">Register</a>
+      <a href="/login/">Login</a>
+      <a href="/logout/">Logout</a>
     </div>
 
     <div id="dfs-sidebar">
-        <h2>DFS Lineups</h2>
-        <button id="generate-btn" onclick="generateLineups()">Generate New Lineups</button>
-        <div id="lineup-results"></div>
+      <h2>DFS Lineups</h2>
+      <button id="generate-btn" onclick="generateLineups()">Generate New Lineups</button>
+      <div id="lineup-results"></div>
     </div>
 
     <div id="main-content">
-        <div id="header">Dope In The Mornings</div>
-
-        <div id="news-section">
-            <h2>Latest Sports News</h2>
-            <div id="news-container"></div>
-        </div>
+      <div id="header">Dope In The Mornings</div>
+      <div id="news-section">
+        <h2>Latest Sports News</h2>
+        <div id="news-container">Loading sports news…</div>
+      </div>
     </div>
 
     <script>
-        function generateLineups() {
-            fetch("/api/generatelines/")
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById("lineup-results");
-                    container.innerHTML = "";
+      async function generateLineups() {
+        const container = document.getElementById("lineup-results");
+        const button = document.getElementById("generate-btn");
+        button.disabled = true;
+        container.textContent = "Generating lineup…";
+        try {
+          const response = await fetch("/api/generatelines/");
+          const data = await response.json();
+          if (!response.ok || data.error) {
+            container.innerHTML = "";
+            const card = document.createElement("div");
+            card.className = "lineup-card";
+            const heading = document.createElement("h3");
+            heading.textContent = "Lineup unavailable";
+            const message = document.createElement("p");
+            message.textContent = data.error || `Request failed (${response.status}).`;
+            card.append(heading, message);
+            container.appendChild(card);
+            return;
+          }
 
-                    let html = `
-                        <div class="lineup-card">
-                            <h3>Generated Lineup</h3>
-                            <p>Total Salary: $${data.total_salary}</p>
-                            <p>Total Projection: ${data.total_projection}</p>
-                            <hr>
-                    `;
-
-                    data.players.forEach(p => {
-                        html += `
-                            <div class="player-row">
-                                <span><strong>${p.position}</strong> - ${p.name}</span>
-                                <span>$${p.salary} | ${p.projection}</span>
-                            </div>
-                        `;
-                    });
-
-                    html += `</div>`;
-                    container.innerHTML = html;
-                });
+          const card = document.createElement("div");
+          card.className = "lineup-card";
+          const heading = document.createElement("h3");
+          heading.textContent = "Generated Lineup";
+          card.appendChild(heading);
+          const totals = document.createElement("p");
+          totals.textContent = `Total Salary: $${data.total_salary} | Total Projection: ${data.total_projection}`;
+          card.appendChild(totals);
+          (data.players || []).forEach(player => {
+            const row = document.createElement("div");
+            row.className = "player-row";
+            const name = document.createElement("span");
+            name.textContent = `${player.position || player.slot} - ${player.name}`;
+            const stats = document.createElement("span");
+            stats.textContent = `$${player.salary} | ${player.projection}`;
+            row.append(name, stats);
+            card.appendChild(row);
+          });
+          container.replaceChildren(card);
+        } catch (error) {
+          console.error("Lineup generation error:", error);
+          container.textContent = "Could not reach the lineup service. Please try again.";
+        } finally {
+          button.disabled = false;
         }
+      }
 
-        function loadNews() {
-            fetch("/get_sports_news/?t=" + Date.now())
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById("news-container");
-
-                if (data.error) {
-                    container.innerHTML = "Unable to load sports news right now.";
-                    console.error(data.error);
-                    return;
-                }
-
-                if (!data.news || data.news.length === 0) {
-                    container.innerHTML = "No sports news available.";
-                    return;
-                }
-
-                container.innerHTML = "";
-                data.news.forEach(article => {
-                    const div = document.createElement("div");
-                    div.className = "news-item";
-                    div.innerHTML = `
-                        <strong>${article.title}</strong><br>
-                        <em>${article.source}</em><br>
-                        ${article.snippet || ""}<br>
-                        <a href="${article.url}" target="_blank" style="color:#34ce57;">Read more</a>
-                    `;
-                    container.appendChild(div);
-                });
-            })
-            .catch(err => {
-                console.error("Sports news error:", err);
-                document.getElementById("news-container").innerText = "Error loading sports news.";
-            });
+      async function loadNews() {
+        const container = document.getElementById("news-container");
+        try {
+          const response = await fetch("/get_sports_news/?t=" + Date.now());
+          const data = await response.json();
+          if (!response.ok || data.error) {
+            throw new Error(data.error || `Request failed (${response.status}).`);
+          }
+          if (!Array.isArray(data.news) || data.news.length === 0) {
+            container.textContent = "No sports news available.";
+            return;
+          }
+          container.replaceChildren();
+          data.news.forEach(article => {
+            const item = document.createElement("div");
+            item.className = "news-item";
+            const title = document.createElement("strong");
+            title.textContent = article.title || "Sports news";
+            const source = document.createElement("em");
+            source.textContent = article.source || "";
+            const link = document.createElement("a");
+            link.href = article.url || "#";
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.style.color = "#34ce57";
+            link.textContent = "Read more";
+            item.append(title, document.createElement("br"), source, document.createElement("br"), document.createTextNode(article.snippet || ""), document.createElement("br"), link);
+            container.appendChild(item);
+          });
+        } catch (error) {
+          console.error("Sports news error:", error);
+          container.textContent = "Error loading sports news.";
         }
+      }
 
-        loadNews();
+      loadNews();
     </script>
-</body>
+  </body>
 </html>
