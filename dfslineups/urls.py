@@ -8,6 +8,12 @@ from dfslineups.lineup_api import (
     generate_nfl_lines,
     nba_dashboard,
 )
+from dfslineups.sports_news import (
+    get_nba_news,
+    get_nba_ticker,
+    get_nfl_news,
+    get_nfl_ticker,
+)
 from dfslineups.views import RegisterView, donations, get_position_breakdown, user_profile
 
 
@@ -34,6 +40,12 @@ urlpatterns = [
     path("api/generatelines/", generate_nfl_lines, name="generatelines"),
     path("api/nba/generatelines/", generate_nba_lines, name="nba_generatelines"),
 
+    # League-specific news feeds and tickers
+    path("nfl-news/", get_nfl_news, name="nfl_news"),
+    path("nba-news/", get_nba_news, name="nba_news_feed"),
+    path("nfl-ticker/", get_nfl_ticker, name="nfl_ticker"),
+    path("nba-ticker/", get_nba_ticker, name="nba_ticker"),
+
     # Router must be below custom endpoints
     path("", include(router.urls)),
 
@@ -52,8 +64,6 @@ urlpatterns = [
 
     # Other app pages and APIs
     path("video-feed/", views.video_feed, name="video_feed"),
-    path("nba-ticker/", views.nba_news_ticker, name="nba_ticker"),
-    path("nfl-ticker/", views.nfl_news_ticker, name="nfl_ticker"),
     path("podcast/", views.podcast_dashboard, name="podcast_dashboard"),
     path("upload_to_dk/", views.upload_to_dk_file, name="upload_to_dk"),
     path("upload_dk_csv_page/", views.upload_dk_csv_page, name="upload_dk_csv_page"),
@@ -69,7 +79,6 @@ urlpatterns = [
     path("get_players/", api_view.get_players, name="get_players"),
     path("get_position_breakdown/", get_position_breakdown, name="get_position_breakdown"),
     path("get_sports_news/", views.get_sports_news, name="get_sports_news"),
-    path("nba_news/", views.nba_news_ticker, name="nba_news"),
 
     # NFL pages
     path("qb/", views.qb_page, name="qb_page"),
