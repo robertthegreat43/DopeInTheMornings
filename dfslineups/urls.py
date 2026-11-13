@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from dfslineups import api_view, views
+from dfslineups import api_view, sports_news, views
 from dfslineups.lineup_api import (
     dope_dashboard,
     generate_nba_lines,
@@ -52,8 +52,8 @@ urlpatterns = [
 
     # Other app pages and APIs
     path("video-feed/", views.video_feed, name="video_feed"),
-    path("nba-ticker/", views.nba_news_ticker, name="nba_ticker"),
-    path("nfl-ticker/", views.nfl_news_ticker, name="nfl_ticker"),
+    path("nba-ticker/", sports_news.get_nba_ticker, name="nba_ticker"),
+    path("nfl-ticker/", sports_news.get_nfl_ticker, name="nfl_ticker"),
     path("podcast/", views.podcast_dashboard, name="podcast_dashboard"),
     path("upload_to_dk/", views.upload_to_dk_file, name="upload_to_dk"),
     path("upload_dk_csv_page/", views.upload_dk_csv_page, name="upload_dk_csv_page"),
@@ -68,8 +68,10 @@ urlpatterns = [
     path("get_week_performance/", views.get_week_performance, name="get_week_performance"),
     path("get_players/", api_view.get_players, name="get_players"),
     path("get_position_breakdown/", get_position_breakdown, name="get_position_breakdown"),
-    path("get_sports_news/", views.get_sports_news, name="get_sports_news"),
-    path("nba_news/", views.nba_news_ticker, name="nba_news"),
+    # Keep the existing endpoint for the NFL dashboard and provide a separate NBA feed.
+    path("get_sports_news/", sports_news.get_nfl_news, name="get_sports_news"),
+    path("get_nba_news/", sports_news.get_nba_news, name="get_nba_news"),
+    path("nba_news/", sports_news.get_nba_ticker, name="nba_news"),
 
     # NFL pages
     path("qb/", views.qb_page, name="qb_page"),
