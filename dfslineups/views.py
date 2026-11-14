@@ -1239,7 +1239,7 @@ def view_full_lineups(request):
 # ------------------------------------------------------------
 
 @login_required
-def dope_in_the_mornings(request):
+def nba_dashboard(request):
     return render(request, "NBA.html")
 
 
