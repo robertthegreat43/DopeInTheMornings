@@ -1,1 +1,286 @@
 
+P
+P
+C
+1B
+2B
+3B
+SS
+OF
+OF
+OF
+Salary Cap = $50,000
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+import random
+
+@require_GET
+def generate_mlb_lines(request):
+
+    players = list(
+        Player.objects.values(
+            "id",
+            "name",
+            "position",
+            "team",
+            "salary",
+            "projection",
+            "status"
+        )
+    )
+
+    players = [
+        p for p in players
+        if (
+            p.get("status", "")
+            .upper()
+            not in ["OUT", "IR", "INACTIVE"]
+        )
+    ]
+
+    if not players:
+
+        return JsonResponse(
+            {
+                "error":
+                "No MLB players loaded."
+            },
+            status=400
+        )
+
+    def has_pos(player, pos):
+
+        position = (
+            player.get("position", "")
+            .upper()
+        )
+
+        return pos in position
+
+    pitchers = [
+        p for p in players
+        if has_pos(p, "P")
+    ]
+
+    catchers = [
+        p for p in players
+        if has_pos(p, "C")
+    ]
+
+    first_base = [
+        p for p in players
+        if has_pos(p, "1B")
+    ]
+
+    second_base = [
+        p for p in players
+        if has_pos(p, "2B")
+    ]
+
+    third_base = [
+        p for p in players
+        if has_pos(p, "3B")
+    ]
+
+    shortstop = [
+        p for p in players
+        if has_pos(p, "SS")
+    ]
+
+    outfield = [
+        p for p in players
+        if has_pos(p, "OF")
+    ]
+
+    counts = {
+        "P": len(pitchers),
+        "C": len(catchers),
+        "1B": len(first_base),
+        "2B": len(second_base),
+        "3B": len(third_base),
+        "SS": len(shortstop),
+        "OF": len(outfield),
+    }
+
+    if (
+        len(pitchers) < 2
+        or len(catchers) < 1
+        or len(first_base) < 1
+        or len(second_base) < 1
+        or len(third_base) < 1
+        or len(shortstop) < 1
+        or len(outfield) < 3
+    ):
+
+        return JsonResponse(
+            {
+                "error":
+                "Not enough MLB players loaded.",
+                "position_counts":
+                counts
+            },
+            status=400
+        )
+
+    best_lineup = None
+    best_projection = 0
+
+    for _ in range(10000):
+
+        try:
+
+            lineup = {}
+
+            lineup["P1"] = random.choice(
+                pitchers
+            )
+
+            remaining_pitchers = [
+                p for p in pitchers
+                if p["id"] != lineup["P1"]["id"]
+            ]
+
+            lineup["P2"] = random.choice(
+                remaining_pitchers
+            )
+
+            lineup["C"] = random.choice(
+                catchers
+            )
+
+            lineup["1B"] = random.choice(
+                first_base
+            )
+
+            lineup["2B"] = random.choice(
+                second_base
+            )
+
+            lineup["3B"] = random.choice(
+                third_base
+            )
+
+            lineup["SS"] = random.choice(
+                shortstop
+            )
+
+            used_ids = {
+                player["id"]
+                for player
+                in lineup.values()
+            }
+
+            available_of = [
+                p for p in outfield
+                if p["id"]
+                not in used_ids
+            ]
+
+            if len(
+                available_of
+            ) < 3:
+                continue
+
+            of_players = random.sample(
+                available_of,
+                3
+            )
+
+            lineup["OF1"] = of_players[0]
+            lineup["OF2"] = of_players[1]
+            lineup["OF3"] = of_players[2]
+
+            player_ids = [
+                p["id"]
+                for p
+                in lineup.values()
+            ]
+
+            if len(player_ids) != len(set(player_ids)):
+                continue
+
+            total_salary = sum(
+                int(
+                    p.get(
+                        "salary",
+                        0
+                    )
+                )
+                for p
+                in lineup.values()
+            )
+
+            if total_salary > 50000:
+                continue
+
+            total_projection = sum(
+                float(
+                    p.get(
+                        "projection",
+                        0
+                    )
+                )
+                for p
+                in lineup.values()
+            )
+
+            if total_projection > best_projection:
+
+                best_projection = (
+                    total_projection
+                )
+
+                best_lineup = lineup
+
+        except Exception:
+            continue
+
+    if best_lineup is None:
+
+        return JsonResponse(
+            {
+                "error":
+                "Could not build a valid MLB lineup under the salary cap."
+            },
+            status=400
+        )
+
+    return JsonResponse({
+
+        "total_salary":
+        sum(
+            int(
+                p["salary"]
+            )
+            for p
+            in best_lineup.values()
+        ),
+
+        "total_projection":
+        round(
+            sum(
+                float(
+                    p["projection"]
+                )
+                for p
+                in best_lineup.values()
+            ),
+            2
+        ),
+
+        "players": [
+
+            {
+                "slot": slot,
+                "name": player["name"],
+                "position": player["position"],
+                "team": player["team"],
+                "salary": player["salary"],
+                "projection": player["projection"],
+            }
+
+            for slot, player
+            in best_lineup.items()
+        ]
+    })
