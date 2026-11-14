@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NBA DFS Dashboard</title>
+    <title>Dope In The Mornings NBA DFS</title>
 
     <style>
+
         *{
             margin:0;
             padding:0;
@@ -13,125 +14,190 @@
         }
 
         body{
-            background:#0d0d0d;
+            background:#0b0b0b;
             color:white;
-            font-family:Arial,sans-serif;
+            font-family:Arial, Helvetica, sans-serif;
         }
 
         .navbar{
-            background:#111;
+            background:#121212;
             padding:15px;
-            border-bottom:3px solid #34ce57;
+            border-bottom:3px solid #27ae60;
             display:flex;
             flex-wrap:wrap;
             gap:10px;
         }
 
         .navbar a{
-            color:white;
             text-decoration:none;
-            padding:10px 15px;
+            color:white;
             background:#222;
-            border-radius:6px;
+            padding:10px 15px;
+            border-radius:5px;
+            transition:.3s;
         }
 
         .navbar a:hover{
-            background:#34ce57;
+            background:#27ae60;
             color:black;
         }
 
-        .container{
+        .wrapper{
             padding:25px;
         }
 
         .header{
-            font-size:32px;
-            font-weight:bold;
-            margin-bottom:20px;
-            color:#34ce57;
+            text-align:center;
+            margin-bottom:30px;
         }
 
-        .button-row{
-            margin-bottom:20px;
+        .header h1{
+            color:#27ae60;
+            margin-bottom:10px;
         }
 
-        button{
+        .header p{
+            color:#ccc;
+        }
+
+        .controls{
+            text-align:center;
+            margin-bottom:25px;
+        }
+
+        .generate-btn{
+            background:#27ae60;
+            color:white;
             border:none;
-            background:#34ce57;
-            color:black;
-            padding:12px 20px;
+            padding:14px 24px;
+            font-size:18px;
             border-radius:8px;
             cursor:pointer;
-            font-weight:bold;
         }
 
-        button:hover{
-            background:#49e66d;
+        .generate-btn:hover{
+            background:#2ecc71;
+        }
+
+        .results{
+            max-width:1200px;
+            margin:auto;
         }
 
         .lineup-card{
-            background:#181818;
+            background:#151515;
             border:1px solid #333;
-            border-radius:8px;
+            border-radius:10px;
             padding:20px;
+            box-shadow:0 0 10px rgba(0,0,0,.4);
         }
 
-        .player{
-            display:flex;
-            justify-content:space-between;
-            padding:8px 0;
+        .lineup-title{
+            color:#27ae60;
+            margin-bottom:20px;
+        }
+
+        .player-row{
+            display:grid;
+            grid-template-columns:
+                80px
+                250px
+                120px
+                120px
+                120px;
+            padding:12px;
             border-bottom:1px solid #333;
         }
 
-        .player:last-child{
-            border-bottom:none;
+        .player-row.header-row{
+            background:#222;
+            font-weight:bold;
         }
 
         .totals{
             margin-top:20px;
-            font-size:18px;
-            color:#34ce57;
+            padding:20px;
+            background:#101010;
+            border-radius:8px;
         }
 
         .error{
-            color:red;
-            font-weight:bold;
+            color:#ff4d4d;
+            background:#220000;
+            padding:20px;
+            border-radius:8px;
         }
-    </style>
 
+        .loading{
+            color:#27ae60;
+            text-align:center;
+            font-size:20px;
+        }
+
+        @media(max-width:900px){
+
+            .player-row{
+                grid-template-columns:1fr;
+                gap:5px;
+            }
+
+        }
+
+    </style>
 </head>
 <body>
 
 <nav class="navbar">
 
     <a href="/DopeInTheMornings/">NFL Dashboard</a>
+
     <a href="/nba_lines/">NBA Dashboard</a>
 
     <a href="/pg/">PG</a>
-    <a href="/sg/">SG</a>
-    <a href="/f/">F</a>
-    <a href="/pf/">PF</a>
-    <a href="/center/">CENTER</a>
 
-    <a href="/login/">Login</a>
+    <a href="/sg/">SG</a>
+
+    <a href="/f/">F</a>
+
+    <a href="/pf/">PF</a>
+
+    <a href="/center/">Center</a>
+
+    <a href="/full_lineup/">Training</a>
+
     <a href="/logout/">Logout</a>
 
 </nav>
 
-<div class="container">
+<div class="wrapper">
 
     <div class="header">
-        NBA DFS LINEUP GENERATOR
+
+        <h1>
+            🏀 Dope In The Mornings NBA DFS
+        </h1>
+
+        <p>
+            DraftKings NBA Lineup Generator
+        </p>
+
     </div>
 
-    <div class="button-row">
-        <button id="nbaButton">
+    <div class="controls">
+
+        <button
+            id="nbaGenerateBtn"
+            class="generate-btn"
+        >
             Generate NBA Lineup
         </button>
+
     </div>
 
-    <div id="results">
-        Click Generate NBA Lineup
+    <div
+        id="lineupResults"
+        class="results"
+    >
     </div>
 
 </div>
@@ -141,10 +207,12 @@
 async function generateNBALineup(){
 
     const results =
-        document.getElementById("results");
+        document.getElementById(
+            "lineupResults"
+        );
 
     results.innerHTML =
-        "<h3>Generating NBA lineup...</h3>";
+        '<div class="loading">Generating NBA Lineup...</div>';
 
     try{
 
@@ -158,57 +226,85 @@ async function generateNBALineup(){
 
         if(data.error){
 
-            results.innerHTML =
-                `<div class="error">
+            results.innerHTML = `
+                <div class="error">
+                    <strong>Error</strong><br>
                     ${data.error}
-                </div>`;
+                </div>
+            `;
 
             return;
         }
 
-        let html = "";
-
-        html += `
+        let html = `
             <div class="lineup-card">
-                <h2>DraftKings NBA Lineup</h2>
-                <br>
+
+                <h2 class="lineup-title">
+                    DraftKings NBA Lineup
+                </h2>
+
+                <div class="player-row header-row">
+                    <div>Slot</div>
+                    <div>Name</div>
+                    <div>Position</div>
+                    <div>Salary</div>
+                    <div>Projection</div>
+                </div>
         `;
 
         data.players.forEach(player=>{
 
             html += `
-                <div class="player">
+
+                <div class="player-row">
+
                     <div>
-                        <strong>${player.slot}</strong>
-                        -
+                        ${player.slot}
+                    </div>
+
+                    <div>
                         ${player.name}
                     </div>
 
                     <div>
+                        ${player.position}
+                    </div>
+
+                    <div>
                         $${player.salary}
-                        |
+                    </div>
+
+                    <div>
                         ${player.projection}
                     </div>
+
                 </div>
+
             `;
 
         });
 
         html += `
+
             <div class="totals">
 
-                Total Salary:
-                $${data.total_salary}
+                <h3>
+                    Salary:
+                    $${data.total_salary}
+                </h3>
 
-                <br><br>
+                <br>
 
-                Projected Points:
-                ${data.total_projection}
+                <h3>
+                    Projection:
+                    ${data.total_projection}
+                </h3>
 
             </div>
-        `;
 
-        html += "</div>";
+        </div>
+
+        `;
 
         results.innerHTML = html;
 
@@ -217,15 +313,17 @@ async function generateNBALineup(){
 
         console.error(error);
 
-        results.innerHTML =
-            `<div class="error">
+        results.innerHTML = `
+            <div class="error">
                 Failed to connect to NBA API.
-            </div>`;
+            </div>
+        `;
     }
+
 }
 
 document
-.getElementById("nbaButton")
+.getElementById("nbaGenerateBtn")
 .addEventListener(
     "click",
     generateNBALineup
