@@ -1334,6 +1334,14 @@ def generate_week_performances_from_players():
         )
 
 
+#MLB
+@login_required
+def mlb_dashboard(request):
+    return render(request, "MLB.html")
+
+
+
+
 
 
 
