@@ -34,6 +34,13 @@ urlpatterns = [
     path("api/generatelines/", generate_nfl_lines, name="generatelines"),
     path("api/nba/generatelines/", generate_nba_lines, name="nba_generatelines"),
 
+    #MLB generators
+    path("mlb_lines/",mlb_dashboard, name="mlb_lines"),
+
+    path("api/mlb/generatelines/", generate_mlb_lines, name="mlb_generatelines"),
+
+    path("get_mlb_news/", sports_news.get_mlb_news, name="get_mlb_news"),
+
     # Router must be below custom endpoints
     path("", include(router.urls)),
 
