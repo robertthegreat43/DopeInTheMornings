@@ -174,36 +174,16 @@ def generate_nfl_lines(request):
     return JsonResponse(_serialize_lineup(slots, best[1]))
 
 
-@require_GET
-def generate_nba_lines(request):
-    """Generate an NBA lineup using each player's full multi-position eligibility."""
-    players = [p for p in Player.objects.values(*PLAYER_FIELDS) if not _is_unavailable(p)]
-    if not players:
-        return JsonResponse({"error": "No available players are loaded. Upload an NBA salary CSV first."}, status=400)
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from .models import Player
 
-    eligible = {
-        slot: [p for p in players if _position_tokens(p["position"]) & positions]
-        for slot, positions in NBA_SLOTS
-    }
-    missing = [slot for slot, _ in NBA_SLOTS if not eligible[slot]]
-    if missing:
-        return JsonResponse({
-            "error": "The uploaded NBA player data has no eligible players for these roster slots.",
-            "missing_slots": missing,
-            "position_counts": {
-                token: sum(token in _position_tokens(p["position"]) for p in players)
-                for token in ("PG", "SG", "SF", "PF", "C")
-            },
-        }, status=400)
 
-    slots = tuple(slot for slot, _ in NBA_SLOTS)
-    lineup, visited = _find_best_lineup(slots, eligible)
-    if lineup is None:
-        return JsonResponse({
-            "error": "No unique 8-player NBA lineup fits the $50,000 cap. Check salaries and player eligibility in the uploaded CSV.",
-            "search_nodes": visited,
-        }, status=400)
-    return JsonResponse(_serialize_lineup(slots, lineup))
+@login_required
+def nba_dashboard(request):
+    return render(request, "NBA.html")
 
 
 @login_required
@@ -211,6 +191,170 @@ def dope_dashboard(request):
     return render(request, "DopeInTheMornings.html")
 
 
-@login_required
-def nba_dashboard(request):
-    return render(request, "NBA.html")
+@require_GET
+def generate_nba_lines(request):
+
+    players = list(
+        Player.objects.values(
+            "id",
+            "name",
+            "position",
+            "team",
+            "salary",
+            "projection",
+            "status"
+        )
+    )
+
+    players = [
+        p for p in players
+        if (p.get("status") or "").upper()
+        not in ["OUT", "IR", "INACTIVE"]
+    ]
+
+    if not players:
+        return JsonResponse({
+            "error": "No NBA players loaded."
+        }, status=400)
+
+    def has_pos(player, pos):
+        position = (player.get("position") or "").upper()
+        return pos in position
+
+    pgs = [p for p in players if has_pos(p, "PG")]
+    sgs = [p for p in players if has_pos(p, "SG")]
+    sfs = [p for p in players if has_pos(p, "SF")]
+    pfs = [p for p in players if has_pos(p, "PF")]
+    centers = [p for p in players if has_pos(p, "C")]
+
+    if not all([
+        len(pgs),
+        len(sgs),
+        len(sfs),
+        len(pfs),
+        len(centers)
+    ]):
+        return JsonResponse({
+            "error": "NBA positions are missing.",
+            "counts": {
+                "PG": len(pgs),
+                "SG": len(sgs),
+                "SF": len(sfs),
+                "PF": len(pfs),
+                "C": len(centers)
+            }
+        }, status=400)
+
+    best_lineup = None
+    best_projection = 0
+
+    import random
+
+    for _ in range(10000):
+
+        try:
+
+            lineup = {}
+
+            lineup["PG"] = random.choice(pgs)
+            lineup["SG"] = random.choice(sgs)
+            lineup["SF"] = random.choice(sfs)
+            lineup["PF"] = random.choice(pfs)
+            lineup["C"] = random.choice(centers)
+
+            used = {
+                lineup["PG"]["id"],
+                lineup["SG"]["id"],
+                lineup["SF"]["id"],
+                lineup["PF"]["id"],
+                lineup["C"]["id"],
+            }
+
+            g_pool = [
+                p for p in players
+                if (
+                    ("PG" in p["position"] or
+                     "SG" in p["position"])
+                    and p["id"] not in used
+                )
+            ]
+
+            lineup["G"] = random.choice(g_pool)
+            used.add(lineup["G"]["id"])
+
+            f_pool = [
+                p for p in players
+                if (
+                    ("SF" in p["position"] or
+                     "PF" in p["position"])
+                    and p["id"] not in used
+                )
+            ]
+
+            lineup["F"] = random.choice(f_pool)
+            used.add(lineup["F"]["id"])
+
+            util_pool = [
+                p for p in players
+                if p["id"] not in used
+            ]
+
+            lineup["UTIL"] = random.choice(util_pool)
+
+            total_salary = sum(
+                int(p["salary"] or 0)
+                for p in lineup.values()
+            )
+
+            if total_salary > 50000:
+                continue
+
+            total_projection = sum(
+                float(p["projection"] or 0)
+                for p in lineup.values()
+            )
+
+            if total_projection > best_projection:
+                best_projection = total_projection
+                best_lineup = lineup
+
+        except Exception:
+            continue
+
+    if not best_lineup:
+        return JsonResponse({
+            "error":
+            "Could not create NBA lineup under salary cap."
+        }, status=400)
+
+    return JsonResponse({
+
+        "total_salary": sum(
+            p["salary"]
+            for p in best_lineup.values()
+        ),
+
+        "total_projection": round(
+            sum(
+                float(p["projection"] or 0)
+                for p in best_lineup.values()
+            ),
+            2,
+        ),
+
+        "players": [
+
+            {
+                "slot": slot,
+                "name": player["name"],
+                "position": player["position"],
+                "team": player["team"],
+                "salary": player["salary"],
+                "projection": player["projection"],
+            }
+
+            for slot, player
+            in best_lineup.items()
+
+        ]
+    })
