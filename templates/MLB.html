@@ -1,1 +1,439 @@
 
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Dope In The Mornings - MLB DFS</title>
+
+<style>
+
+body {
+    margin:0;
+    padding:0;
+    background:#0d0d0d;
+    color:#fff;
+    font-family:Arial,sans-serif;
+    display:flex;
+    height:100vh;
+    overflow:hidden;
+}
+
+#top-nav {
+    width:100%;
+    background:#111;
+    border-bottom:2px solid #222;
+    padding:10px;
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:1000;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+#top-nav a {
+    color:#fff;
+    text-decoration:none;
+    padding:8px 12px;
+    background:#28a745;
+    border-radius:6px;
+    transition:.2s;
+}
+
+#top-nav a:hover {
+    background:#34ce57;
+    color:#000;
+}
+
+#dfs-sidebar {
+    width:380px;
+    flex:0 0 380px;
+    box-sizing:border-box;
+    background:#111;
+    border-right:2px solid #222;
+    padding:20px;
+    overflow-y:auto;
+    margin-top:70px;
+}
+
+#dfs-sidebar h2 {
+    margin-top:0;
+    color:#0f0;
+    letter-spacing:1px;
+}
+
+#generate-btn {
+    width:100%;
+    padding:12px;
+    background:#28a745;
+    border:none;
+    border-radius:6px;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+    margin-bottom:20px;
+}
+
+#generate-btn:hover {
+    background:#34ce57;
+}
+
+.lineup-card {
+    background:#1a1a1a;
+    padding:15px;
+    border-radius:8px;
+    margin-bottom:20px;
+    border:1px solid #333;
+}
+
+.lineup-card h3 {
+    margin:0 0 12px;
+    color:#0f0;
+}
+
+.player-row {
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    padding:5px 0;
+    border-bottom:1px solid #222;
+}
+
+.player-row:last-child {
+    border-bottom:none;
+}
+
+#main-content {
+    flex:1;
+    min-width:0;
+    padding:20px;
+    background:#0d0d0d;
+    margin-top:70px;
+    overflow-y:auto;
+}
+
+#header {
+    font-size:28px;
+    font-weight:bold;
+    margin-bottom:20px;
+}
+
+#news-section {
+    background:#111;
+    padding:20px;
+    border-radius:10px;
+}
+
+.news-item {
+    border-bottom:1px solid #333;
+    padding:10px 0;
+}
+
+.news-item:last-child {
+    border-bottom:none;
+}
+
+.news-item a {
+    color:#34ce57;
+    text-decoration:none;
+}
+
+.news-item a:hover {
+    text-decoration:underline;
+}
+
+@media (max-width:760px){
+
+    body{
+        overflow:auto;
+        height:auto;
+        min-height:100vh;
+        display:block;
+    }
+
+    #top-nav{
+        position:sticky;
+    }
+
+    #dfs-sidebar{
+        width:100%;
+        margin-top:0;
+        border-right:0;
+        border-bottom:2px solid #222;
+    }
+
+    #main-content{
+        margin-top:0;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<nav id="top-nav">
+
+    <a href="/DopeInTheMornings/">NFL</a>
+
+    <a href="/nba_lines/">NBA</a>
+
+    <a href="/mlb_lines/">MLB</a>
+
+    <a href="/pitchers/">P</a>
+
+    <a href="/catchers/">C</a>
+
+    <a href="/firstbase/">1B</a>
+
+    <a href="/secondbase/">2B</a>
+
+    <a href="/thirdbase/">3B</a>
+
+    <a href="/shortstop/">SS</a>
+
+    <a href="/outfield/">OF</a>
+
+    <a href="/full_lineup/">ML Training</a>
+
+    <a href="/logout/">Logout</a>
+
+</nav>
+
+<aside id="dfs-sidebar">
+
+    <h2>MLB DFS Lineups</h2>
+
+    <button
+        id="generate-btn"
+        onclick="generateMLBLineups()">
+
+        Generate MLB Lineup
+
+    </button>
+
+    <div id="lineup-results"></div>
+
+</aside>
+
+<main id="main-content">
+
+    <div id="header">
+        ⚾ Dope In The Mornings - MLB DFS
+    </div>
+
+    <section id="news-section">
+
+        <h2>Latest MLB News</h2>
+
+        <div id="news-container">
+
+            Loading MLB news...
+
+        </div>
+
+    </section>
+
+</main>
+
+<script>
+
+async function generateMLBLineups(){
+
+    const container =
+        document.getElementById(
+            "lineup-results"
+        );
+
+    const button =
+        document.getElementById(
+            "generate-btn"
+        );
+
+    button.disabled = true;
+
+    container.innerHTML =
+        "Generating lineup...";
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/mlb/generatelines/"
+            );
+
+        const data =
+            await response.json();
+
+        if(!response.ok || data.error){
+
+            container.innerHTML =
+                `<div class="lineup-card">
+                    <h3>Error</h3>
+                    ${data.error}
+                </div>`;
+
+            return;
+        }
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "lineup-card";
+
+        card.innerHTML =
+            `<h3>Generated MLB Lineup</h3>
+             <p>
+                Total Salary:
+                $${data.total_salary}
+                <br>
+                Projection:
+                ${data.total_projection}
+             </p>`;
+
+        (data.players || [])
+            .forEach(player => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+            row.className =
+                "player-row";
+
+            row.innerHTML = `
+                <span>
+                    ${player.slot}
+                    -
+                    ${player.name}
+                </span>
+
+                <span>
+                    $${player.salary}
+                    |
+                    ${player.projection}
+                </span>
+            `;
+
+            card.appendChild(
+                row
+            );
+
+        });
+
+        container.replaceChildren(
+            card
+        );
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        container.innerHTML =
+            "Could not reach MLB service.";
+
+    }
+    finally{
+
+        button.disabled = false;
+
+    }
+
+}
+
+async function loadNews(){
+
+    const container =
+        document.getElementById(
+            "news-container"
+        );
+
+    try{
+
+        const response =
+            await fetch(
+                "/get_mlb_news/?t=" +
+                Date.now()
+            );
+
+        const data =
+            await response.json();
+
+        if(
+            !response.ok ||
+            data.error
+        ){
+            throw new Error(
+                data.error
+            );
+        }
+
+        container.innerHTML = "";
+
+        (data.news || [])
+        .forEach(article => {
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+            item.className =
+                "news-item";
+
+            item.innerHTML = `
+                <strong>
+                    ${article.title}
+                </strong>
+
+                <br>
+
+                <em>
+                    ${article.source || ""}
+                </em>
+
+                <br>
+
+                ${article.snippet || ""}
+
+                <br><br>
+
+                <a href="${article.url}"
+                   target="_blank">
+                    Read More
+                </a>
+            `;
+
+            container.appendChild(
+                item
+            );
+
+        });
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        container.innerHTML =
+            "Error loading MLB news.";
+
+    }
+
+}
+
+loadNews();
+
+</script>
+
+</body>
+</html>
