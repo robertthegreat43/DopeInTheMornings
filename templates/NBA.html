@@ -1,220 +1,270 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dope In The Mornings NBA DFS</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Dope In The Mornings - NBA DFS</title>
 
-    <style>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0d0d0d;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
-        }
+    #top-nav {
+      width: 100%;
+      background: #111;
+      border-bottom: 2px solid #222;
+      padding: 10px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
 
-        body{
-            background:#0b0b0b;
-            color:white;
-            font-family:Arial, Helvetica, sans-serif;
-        }
+    #top-nav a {
+      color: #fff;
+      text-decoration: none;
+      padding: 8px 12px;
+      background: #28a745;
+      border-radius: 6px;
+      transition: 0.2s;
+    }
 
-        .navbar{
-            background:#121212;
-            padding:15px;
-            border-bottom:3px solid #27ae60;
-            display:flex;
-            flex-wrap:wrap;
-            gap:10px;
-        }
+    #top-nav a:hover {
+      background: #34ce57;
+      color: #000;
+    }
 
-        .navbar a{
-            text-decoration:none;
-            color:white;
-            background:#222;
-            padding:10px 15px;
-            border-radius:5px;
-            transition:.3s;
-        }
+    #dfs-sidebar {
+      width: 380px;
+      flex: 0 0 380px;
+      box-sizing: border-box;
+      background: #111;
+      border-right: 2px solid #222;
+      padding: 20px;
+      overflow-y: auto;
+      margin-top: 70px;
+    }
 
-        .navbar a:hover{
-            background:#27ae60;
-            color:black;
-        }
+    #dfs-sidebar h2 {
+      margin-top: 0;
+      font-size: 22px;
+      letter-spacing: 1px;
+      color: #0f0;
+    }
 
-        .wrapper{
-            padding:25px;
-        }
+    #generate-btn {
+      width: 100%;
+      padding: 12px;
+      background: #28a745;
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
 
-        .header{
-            text-align:center;
-            margin-bottom:30px;
-        }
+    #generate-btn:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
 
-        .header h1{
-            color:#27ae60;
-            margin-bottom:10px;
-        }
+    .lineup-card {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #333;
+    }
 
-        .header p{
-            color:#ccc;
-        }
+    .lineup-card h3 {
+      margin: 0 0 10px 0;
+      color: #0f0;
+    }
 
-        .controls{
-            text-align:center;
-            margin-bottom:25px;
-        }
+    .player-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 4px 0;
+      border-bottom: 1px solid #222;
+    }
 
-        .generate-btn{
-            background:#27ae60;
-            color:white;
-            border:none;
-            padding:14px 24px;
-            font-size:18px;
-            border-radius:8px;
-            cursor:pointer;
-        }
+    .player-row:last-child {
+      border-bottom: none;
+    }
 
-        .generate-btn:hover{
-            background:#2ecc71;
-        }
+    #main-content {
+      flex: 1;
+      min-width: 0;
+      padding: 20px;
+      background: #0d0d0d;
+      margin-top: 70px;
+      overflow-y: auto;
+    }
 
-        .results{
-            max-width:1200px;
-            margin:auto;
-        }
+    #header {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
 
-        .lineup-card{
-            background:#151515;
-            border:1px solid #333;
-            border-radius:10px;
-            padding:20px;
-            box-shadow:0 0 10px rgba(0,0,0,.4);
-        }
+    #news-section {
+      background: #111;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+    }
 
-        .lineup-title{
-            color:#27ae60;
-            margin-bottom:20px;
-        }
+    .news-item {
+      border-bottom: 1px solid #333;
+      padding: 10px 0;
+    }
 
-        .player-row{
-            display:grid;
-            grid-template-columns:
-                80px
-                250px
-                120px
-                120px
-                120px;
-            padding:12px;
-            border-bottom:1px solid #333;
-        }
+    .news-item:last-child {
+      border-bottom: none;
+    }
 
-        .player-row.header-row{
-            background:#222;
-            font-weight:bold;
-        }
+    .news-item a {
+      color: #34ce57;
+      text-decoration: none;
+    }
 
-        .totals{
-            margin-top:20px;
-            padding:20px;
-            background:#101010;
-            border-radius:8px;
-        }
+    .news-item a:hover {
+      text-decoration: underline;
+    }
 
-        .error{
-            color:#ff4d4d;
-            background:#220000;
-            padding:20px;
-            border-radius:8px;
-        }
+    @media (max-width: 760px) {
 
-        .loading{
-            color:#27ae60;
-            text-align:center;
-            font-size:20px;
-        }
+      body {
+        overflow: auto;
+        height: auto;
+        min-height: 100vh;
+        display: block;
+      }
 
-        @media(max-width:900px){
+      #top-nav {
+        position: sticky;
+      }
 
-            .player-row{
-                grid-template-columns:1fr;
-                gap:5px;
-            }
+      #dfs-sidebar {
+        width: 100%;
+        margin-top: 0;
+        border-right: 0;
+        border-bottom: 2px solid #222;
+      }
 
-        }
+      #main-content {
+        margin-top: 0;
+      }
 
-    </style>
+    }
+  </style>
 </head>
+
 <body>
 
-<nav class="navbar">
+<nav id="top-nav">
 
-    <a href="/DopeInTheMornings/">NFL Dashboard</a>
+  <a href="/DopeInTheMornings/">NFL Dashboard</a>
 
-    <a href="/nba_lines/">NBA Dashboard</a>
+  <a href="/full_lineup/">ML Training</a>
 
-    <a href="/pg/">PG</a>
+  <a href="/qb/">QB</a>
+  <a href="/rb/">RB</a>
+  <a href="/wr/">WR</a>
+  <a href="/te/">TE</a>
+  <a href="/dst/">DST</a>
+  <a href="/flex/">FLEX</a>
 
-    <a href="/sg/">SG</a>
+  <a href="/nba_lines/">NBA Lineups</a>
 
-    <a href="/f/">F</a>
+  <a href="/pg/">NBA PG</a>
+  <a href="/sg/">NBA SG</a>
+  <a href="/f/">NBA F</a>
+  <a href="/pf/">NBA PF</a>
+  <a href="/center/">NBA C</a>
 
-    <a href="/pf/">PF</a>
-
-    <a href="/center/">Center</a>
-
-    <a href="/full_lineup/">Training</a>
-
-    <a href="/logout/">Logout</a>
+  <a href="/register/">Register</a>
+  <a href="/login/">Login</a>
+  <a href="/logout/">Logout</a>
 
 </nav>
 
-<div class="wrapper">
+<aside id="dfs-sidebar">
 
-    <div class="header">
+  <h2>NBA DFS Lineups</h2>
 
-        <h1>
-            🏀 Dope In The Mornings NBA DFS
-        </h1>
+  <button
+      id="generate-btn"
+      type="button"
+      onclick="generateNBALineups()">
 
-        <p>
-            DraftKings NBA Lineup Generator
-        </p>
+      Generate New NBA Lineup
 
-    </div>
+  </button>
 
-    <div class="controls">
+  <div
+      id="lineup-results"
+      aria-live="polite">
+  </div>
 
-        <button
-            id="nbaGenerateBtn"
-            class="generate-btn"
-        >
-            Generate NBA Lineup
-        </button>
+</aside>
 
-    </div>
+<main id="main-content">
 
-    <div
-        id="lineupResults"
-        class="results"
-    >
-    </div>
+  <div id="header">
+      Dope In The Mornings - NBA DFS
+  </div>
 
-</div>
+  <section id="news-section">
+
+      <h2>Latest NBA News</h2>
+
+      <div
+          id="news-container"
+          aria-live="polite">
+
+          Loading NBA news...
+
+      </div>
+
+  </section>
+
+</main>
 
 <script>
 
-async function generateNBALineup(){
+async function generateNBALineups() {
 
-    const results =
+    const container =
         document.getElementById(
-            "lineupResults"
+            "lineup-results"
         );
 
-    results.innerHTML =
-        '<div class="loading">Generating NBA Lineup...</div>';
+    const button =
+        document.getElementById(
+            "generate-btn"
+        );
 
-    try{
+    button.disabled = true;
+
+    container.textContent =
+        "Generating NBA lineup...";
+
+    try {
 
         const response =
             await fetch(
@@ -224,110 +274,247 @@ async function generateNBALineup(){
         const data =
             await response.json();
 
-        if(data.error){
+        if (!response.ok || data.error) {
 
-            results.innerHTML = `
-                <div class="error">
-                    <strong>Error</strong><br>
-                    ${data.error}
-                </div>
-            `;
+            container.replaceChildren();
+
+            const card =
+                document.createElement("div");
+
+            card.className =
+                "lineup-card";
+
+            const heading =
+                document.createElement("h3");
+
+            heading.textContent =
+                "Lineup unavailable";
+
+            const message =
+                document.createElement("p");
+
+            message.textContent =
+                data.error ||
+                `Request failed (${response.status}).`;
+
+            card.append(
+                heading,
+                message
+            );
+
+            container.appendChild(card);
 
             return;
         }
 
-        let html = `
-            <div class="lineup-card">
+        const card =
+            document.createElement("div");
 
-                <h2 class="lineup-title">
-                    DraftKings NBA Lineup
-                </h2>
+        card.className =
+            "lineup-card";
 
-                <div class="player-row header-row">
-                    <div>Slot</div>
-                    <div>Name</div>
-                    <div>Position</div>
-                    <div>Salary</div>
-                    <div>Projection</div>
-                </div>
-        `;
+        const heading =
+            document.createElement("h3");
 
-        data.players.forEach(player=>{
+        heading.textContent =
+            "Generated NBA Lineup";
 
-            html += `
+        const totals =
+            document.createElement("p");
 
-                <div class="player-row">
+        totals.textContent =
+            `Total Salary: $${data.total_salary} | Total Projection: ${data.total_projection}`;
 
-                    <div>
-                        ${player.slot}
-                    </div>
+        card.append(
+            heading,
+            totals
+        );
 
-                    <div>
-                        ${player.name}
-                    </div>
+        (data.players || [])
+        .forEach(player => {
 
-                    <div>
-                        ${player.position}
-                    </div>
+            const row =
+                document.createElement(
+                    "div"
+                );
 
-                    <div>
-                        $${player.salary}
-                    </div>
+            row.className =
+                "player-row";
 
-                    <div>
-                        ${player.projection}
-                    </div>
+            const name =
+                document.createElement(
+                    "span"
+                );
 
-                </div>
+            name.textContent =
+                `${player.slot} - ${player.name}`;
 
-            `;
+            const stats =
+                document.createElement(
+                    "span"
+                );
+
+            stats.textContent =
+                `$${player.salary} | ${player.projection}`;
+
+            row.append(
+                name,
+                stats
+            );
+
+            card.appendChild(
+                row
+            );
 
         });
 
-        html += `
-
-            <div class="totals">
-
-                <h3>
-                    Salary:
-                    $${data.total_salary}
-                </h3>
-
-                <br>
-
-                <h3>
-                    Projection:
-                    ${data.total_projection}
-                </h3>
-
-            </div>
-
-        </div>
-
-        `;
-
-        results.innerHTML = html;
+        container.replaceChildren(
+            card
+        );
 
     }
-    catch(error){
+    catch(error) {
 
-        console.error(error);
+        console.error(
+            "NBA lineup error:",
+            error
+        );
 
-        results.innerHTML = `
-            <div class="error">
-                Failed to connect to NBA API.
-            </div>
-        `;
+        container.textContent =
+            "Could not reach NBA lineup service.";
+
+    }
+    finally {
+
+        button.disabled = false;
+
+    }
+}
+
+async function loadNews() {
+
+    const container =
+        document.getElementById(
+            "news-container"
+        );
+
+    try {
+
+        const response =
+            await fetch(
+                "/get_nba_news/?t=" +
+                Date.now()
+            );
+
+        const data =
+            await response.json();
+
+        if (
+            !response.ok ||
+            data.error
+        ) {
+            throw new Error(
+                data.error ||
+                `Request failed (${response.status})`
+            );
+        }
+
+        if (
+            !Array.isArray(data.news) ||
+            data.news.length === 0
+        ) {
+
+            container.textContent =
+                "No NBA news available.";
+
+            return;
+
+        }
+
+        container.replaceChildren();
+
+        data.news.forEach(
+            article => {
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+            item.className =
+                "news-item";
+
+            const title =
+                document.createElement(
+                    "strong"
+                );
+
+            title.textContent =
+                article.title ||
+                "NBA News";
+
+            const source =
+                document.createElement(
+                    "em"
+                );
+
+            source.textContent =
+                article.source ||
+                "";
+
+            const link =
+                document.createElement(
+                    "a"
+                );
+
+            link.href =
+                article.url ||
+                "#";
+
+            link.target =
+                "_blank";
+
+            link.rel =
+                "noopener noreferrer";
+
+            link.textContent =
+                "Read More";
+
+            item.append(
+                title,
+                document.createElement("br"),
+                source,
+                document.createElement("br"),
+                document.createTextNode(
+                    article.snippet || ""
+                ),
+                document.createElement("br"),
+                document.createElement("br"),
+                link
+            );
+
+            container.appendChild(
+                item
+            );
+
+        });
+
+    }
+    catch(error) {
+
+        console.error(
+            "NBA news error:",
+            error
+        );
+
+        container.textContent =
+            "Error loading NBA news.";
+
     }
 
 }
 
-document
-.getElementById("nbaGenerateBtn")
-.addEventListener(
-    "click",
-    generateNBALineup
-);
+loadNews();
 
 </script>
 
