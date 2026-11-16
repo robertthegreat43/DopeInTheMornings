@@ -23,7 +23,7 @@ NBA_SLOTS = (
 )
 PLAYER_FIELDS = ("id", "name", "position", "team", "salary", "projection", "status")
 NBA_NODE_LIMIT = 30000
-NFL_ATTEMPTS = 1000
+NFL_ATTEMPTS = 30000
 
 
 def _position_tokens(position):
@@ -163,7 +163,7 @@ def generate_nfl_lines(request):
         if salary > 50000:
             continue
         projection = sum(float(p["projection"] or 0) for p in lineup)
-        if best is None or projection > best[0]:
+        if best is None or projection > best[130]:
             best = (projection, lineup)
 
     if best is None:
