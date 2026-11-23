@@ -5,127 +5,67 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Team Projections | Dope In The Mornings</title>
   <style>
-    :root {
-      color-scheme: dark;
-      font-family: Arial, sans-serif;
-      background: #0d0d0d;
-      color: #f5f5f5;
-    }
-
+    :root { color-scheme: dark; font-family: Arial, sans-serif; background: #0d0d0d; color: #f5f5f5; }
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; }
-
-    nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 12px 20px;
-      background: #111;
-      border-bottom: 2px solid #222;
-    }
-
-    nav a {
-      padding: 8px 12px;
-      border-radius: 6px;
-      background: #28a745;
-      color: #fff;
-      text-decoration: none;
-    }
-
-    nav a:hover, nav a:focus-visible { background: #34ce57; color: #000; }
-
+    nav { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 20px; background: #111; border-bottom: 2px solid #222; }
+    nav a, button { padding: 9px 13px; border: 0; border-radius: 6px; background: #28a745; color: #fff; text-decoration: none; font: inherit; }
+    nav a:hover, button:hover { background: #34ce57; color: #000; }
     main { width: min(900px, 100%); margin: 0 auto; padding: 28px 20px; }
     h1 { margin: 0 0 8px; }
     .intro { color: #bbb; margin: 0 0 24px; }
-
-    .panel, .team-card {
-      background: #151515;
-      border: 1px solid #333;
-      border-radius: 10px;
-      padding: 20px;
-      margin-bottom: 18px;
-    }
-
-    .field-label { display: block; margin: 0 0 8px; font-weight: 700; }
-    input, button {
-      min-height: 42px;
-      padding: 9px 12px;
-      border: 1px solid #444;
-      border-radius: 6px;
-      background: #1d1d1d;
-      color: inherit;
-      font: inherit;
-    }
-
-    input:focus { outline: 2px solid #34ce57; outline-offset: 1px; }
+    .panel, .team-card { padding: 20px; margin-bottom: 18px; border: 1px solid #333; border-radius: 10px; background: #151515; }
+    label { display: block; margin-bottom: 8px; font-weight: 700; }
+    input { min-height: 42px; padding: 9px 12px; border: 1px solid #444; border-radius: 6px; background: #1d1d1d; color: inherit; font: inherit; }
+    input:focus { outline: 2px solid #34ce57; }
     .team-input { width: 100%; margin-bottom: 18px; }
-    .scores-heading { margin: 0 0 10px; }
+    h2 { margin: 0 0 14px; }
     .score-list { display: grid; gap: 10px; }
     .score-row { display: flex; align-items: center; gap: 10px; }
-    .score-row label { width: 90px; color: #ccc; }
-    .score-row input { width: 150px; }
-
+    .score-row label { width: 75px; margin: 0; color: #ccc; }
+    .score-row input { width: 160px; }
     .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
-    button { cursor: pointer; border: 0; background: #28a745; }
-    button:hover { background: #34ce57; color: #000; }
+    button { cursor: pointer; }
     button.secondary { background: #383838; }
     button.secondary:hover { background: #555; color: #fff; }
+    button:disabled { opacity: .65; cursor: wait; }
     .error { min-height: 22px; color: #ff8b8b; margin: 12px 0 0; }
-
-    #results h2 { margin: 0 0 14px; }
     .team-card h3 { margin: 0 0 8px; color: #9be7a7; }
     .projection-value { font-size: 1.25rem; font-weight: 700; }
-    .score-summary { color: #bbb; margin-bottom: 0; }
-    .empty { color: #aaa; }
-
-    @media (max-width: 520px) {
-      main { padding: 22px 14px; }
-      .panel, .team-card { padding: 16px; }
-      .score-row label { width: 78px; }
-      .score-row input { width: 130px; }
-    }
+    .score-summary, .empty { color: #aaa; }
+    @media (max-width: 520px) { main { padding: 22px 14px; } .panel, .team-card { padding: 16px; } }
   </style>
 </head>
 <body>
   <nav aria-label="Main navigation">
     <a href="/DopeInTheMornings/">NFL Dashboard</a>
     <a href="/full_lineup/">ML Training</a>
-    <a href="/qb/">QB</a>
-    <a href="/rb/">RB</a>
-    <a href="/wr/">WR</a>
-    <a href="/te/">TE</a>
-    <a href="/dst/">DST</a>
-    <a href="/flex/">FLEX</a>
+    <a href="/qb/">QB</a><a href="/rb/">RB</a><a href="/wr/">WR</a>
+    <a href="/te/">TE</a><a href="/dst/">DST</a><a href="/flex/">FLEX</a>
     <a href="/nba_lines/">NBA Lineups</a>
-    <a href="/register/">Register</a>
-    <a href="/login/">Login</a>
+    <a href="/register/">Register</a><a href="/login/">Login</a>
   </nav>
 
   <main>
     <h1>Team Projections</h1>
     <p class="intro">Enter a team and its past game scores to estimate its score for the next game.</p>
 
-    <form id="projection-form" class="panel" novalidate>
+    <form id="projection-form" class="panel" action="{% url 'projections' %}" method="post">
       {% csrf_token %}
-      <label class="field-label" for="team-name">Team name</label>
-      <input class="team-input" id="team-name" name="team_name" type="text" maxlength="20" required placeholder="For example, Boston Celtics">
-
-      <h2 class="scores-heading">Past game scores</h2>
+      <label for="team-name">Team name (up to 20 characters)</label>
+      <input class="team-input" id="team-name" name="team_name" type="text" maxlength="20" required>
+      <h2>Past game scores</h2>
       <div id="score-list" class="score-list">
-        <div class="score-row">
-          <label for="score-1">Game 1</label>
-          <input id="score-1" name="scores" type="number" min="0" step="1" inputmode="numeric" required aria-label="Game 1 score">
-        </div>
+        <div class="score-row"><label for="score-1">Game 1</label><input id="score-1" name="scores" type="number" min="0" step="1" required></div>
       </div>
-
       <div class="actions">
         <button class="secondary" id="add-score" type="button">Add game score</button>
-        <button type="submit">Calculate projection</button>
+        <button id="submit-button" type="submit">Calculate projection</button>
       </div>
       <p id="form-error" class="error" role="alert" aria-live="assertive"></p>
     </form>
 
-    <section id="results" aria-live="polite" aria-label="Team projections">
+    <section aria-live="polite" aria-label="Projection results">
       <h2>Projection results</h2>
       <p id="empty-results" class="empty">Your calculated team projections will appear here.</p>
       <div id="team-results"></div>
@@ -138,85 +78,68 @@
     const errorMessage = document.getElementById("form-error");
     const results = document.getElementById("team-results");
     const emptyResults = document.getElementById("empty-results");
+    const submitButton = document.getElementById("submit-button");
     let gameCount = 1;
 
     document.getElementById("add-score").addEventListener("click", () => {
+      if (gameCount >= 7) {
+        errorMessage.textContent = "You can enter up to 7 game scores.";
+        return;
+      }
+      errorMessage.textContent = "";
       gameCount += 1;
       const row = document.createElement("div");
       row.className = "score-row";
-
       const label = document.createElement("label");
       label.htmlFor = `score-${gameCount}`;
       label.textContent = `Game ${gameCount}`;
-
       const input = document.createElement("input");
       input.id = `score-${gameCount}`;
       input.name = "scores";
       input.type = "number";
       input.min = "0";
       input.step = "1";
-      input.inputMode = "numeric";
       input.required = true;
       input.setAttribute("aria-label", `Game ${gameCount} score`);
-
       row.append(label, input);
       scoreList.appendChild(row);
       input.focus();
     });
 
-    function predictNextScore(scores) {
-      // Fit a least-squares line to game numbers 1..n and extrapolate to n+1.
-      const count = scores.length;
-      const meanX = (count + 1) / 2;
-      const meanY = scores.reduce((sum, score) => sum + score, 0) / count;
-      let numerator = 0;
-      let denominator = 0;
-
-      scores.forEach((score, index) => {
-        const xOffset = index + 1 - meanX;
-        numerator += xOffset * (score - meanY);
-        denominator += xOffset * xOffset;
-      });
-
-      const slope = denominator === 0 ? 0 : numerator / denominator;
-      return meanY + slope * (count + 1 - meanX);
-    }
-
-    form.addEventListener("submit", event => {
+    form.addEventListener("submit", async event => {
       event.preventDefault();
       errorMessage.textContent = "";
+      if (!form.reportValidity()) return;
+      submitButton.disabled = true;
+      submitButton.textContent = "Calculating…";
+      try {
+        const response = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: { "X-Requested-With": "XMLHttpRequest" }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Could not calculate the projection.");
 
-      const teamName = document.getElementById("team-name").value.trim();
-      const scoreInputs = [...scoreList.querySelectorAll('input[name="scores"]')];
-      const scores = scoreInputs.map(input => input.value === "" ? NaN : Number(input.value));
-
-      if (!teamName) {
-        errorMessage.textContent = "Enter a team name.";
-        document.getElementById("team-name").focus();
-        return;
+        const card = document.createElement("article");
+        card.className = "team-card";
+        const heading = document.createElement("h3");
+        heading.textContent = data.team_name;
+        const projection = document.createElement("p");
+        projection.className = "projection-value";
+        projection.textContent = `Projected next-game score: ${Number(data.projection).toFixed(2)}`;
+        const summary = document.createElement("p");
+        summary.className = "score-summary";
+        summary.textContent = `Based on ${data.scores.length} game ${data.scores.length === 1 ? "score" : "scores"}: ${data.scores.join(", ")}`;
+        card.append(heading, projection, summary);
+        results.prepend(card);
+        emptyResults.hidden = true;
+      } catch (error) {
+        errorMessage.textContent = error.message || "Could not calculate the projection. Please try again.";
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Calculate projection";
       }
-      if (scores.some(score => !Number.isInteger(score) || score < 0)) {
-        errorMessage.textContent = "Enter a non-negative whole-number score for every game.";
-        scoreInputs.find(input => input.value === "" || !input.checkValidity())?.focus();
-        return;
-      }
-
-      const projection = predictNextScore(scores);
-      const card = document.createElement("article");
-      card.className = "team-card";
-
-      const heading = document.createElement("h3");
-      heading.textContent = teamName;
-      const projectionText = document.createElement("p");
-      projectionText.className = "projection-value";
-      projectionText.textContent = `Projected next-game score: ${projection.toFixed(2)}`;
-      const scoreSummary = document.createElement("p");
-      scoreSummary.className = "score-summary";
-      scoreSummary.textContent = `Based on ${scores.length} game ${scores.length === 1 ? "score" : "scores"}: ${scores.join(", ")}`;
-
-      card.append(heading, projectionText, scoreSummary);
-      results.prepend(card);
-      emptyResults.hidden = true;
     });
   </script>
 </body>
