@@ -33,22 +33,17 @@
   <body>
     <nav id="top-nav" aria-label="Main navigation">
       <a href="/full_lineup/">ML Training</a>
-      <a href="/qb/">QB</a>
-      <a href="/rb/">RB</a>
-      <a href="/wr/">WR</a>
-      <a href="/te/">TE</a>
-      <a href="/dst/">DST</a>
-      <a href="/flex/">FLEX</a>
+      <a href="/qb/">QB</a><a href="/rb/">RB</a><a href="/wr/">WR</a>
+      <a href="/te/">TE</a><a href="/dst/">DST</a><a href="/flex/">FLEX</a>
       <a href="/nba_lines/">NBA Lineups</a>
+      <a href="/projections/">Team Projections</a>
       <a href="/logout/">Logout</a>
     </nav>
-
     <aside id="dfs-sidebar">
       <h2>NFL DFS Lineups</h2>
       <button id="generate-btn" type="button" onclick="generateLineups()">Generate New Lineup</button>
       <div id="lineup-results" aria-live="polite"></div>
     </aside>
-
     <main id="main-content">
       <div id="header">Dope In The Mornings</div>
       <section id="news-section">
@@ -56,7 +51,6 @@
         <div id="news-container" aria-live="polite">Loading sports news…</div>
       </section>
     </main>
-
     <script>
       async function generateLineups() {
         const container = document.getElementById("lineup-results");
@@ -83,7 +77,6 @@
             container.appendChild(card);
             return;
           }
-
           const card = document.createElement("div");
           card.className = "lineup-card";
           const heading = document.createElement("h3");
@@ -142,7 +135,6 @@
           container.textContent = "Error loading sports news.";
         }
       }
-
       loadNews();
     </script>
   </body>

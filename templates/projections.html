@@ -17,15 +17,12 @@
     .panel, .team-card { padding: 20px; margin-bottom: 18px; border: 1px solid #333; border-radius: 10px; background: #151515; }
     label { display: block; margin-bottom: 8px; font-weight: 700; }
     input { min-height: 42px; padding: 9px 12px; border: 1px solid #444; border-radius: 6px; background: #1d1d1d; color: inherit; font: inherit; }
-    input:focus { outline: 2px solid #34ce57; }
     .team-input { width: 100%; margin-bottom: 18px; }
     .game-count { width: 120px; margin-bottom: 18px; }
-    h2 { margin: 0 0 14px; }
     .score-list { display: grid; gap: 10px; }
     .score-row { display: flex; align-items: center; gap: 10px; }
     .score-row label { width: 75px; margin: 0; color: #ccc; }
     .score-row input { width: 160px; }
-    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
     button { cursor: pointer; }
     button:disabled { opacity: .65; cursor: wait; }
     .error { min-height: 22px; color: #ff8b8b; margin: 12px 0 0; }
@@ -37,41 +34,29 @@
 </head>
 <body>
   <nav aria-label="Main navigation">
-    <a href="/DopeInTheMornings/">NFL Dashboard</a>
-    <a href="/full_lineup/">ML Training</a>
-    <a href="/qb/">QB</a><a href="/rb/">RB</a><a href="/wr/">WR</a>
-    <a href="/te/">TE</a><a href="/dst/">DST</a><a href="/flex/">FLEX</a>
-    <a href="/nba_lines/">NBA Lineups</a>
-    <a href="/register/">Register</a><a href="/login/">Login</a>
+    <a href="/DopeInTheMornings/">Dashboard</a>
+    <a href="/projections/">Team Projections</a>
   </nav>
-
   <main>
     <h1>Team Projections</h1>
     <p class="intro">Enter a team name, number of games, and each game score to estimate the next score.</p>
-
     <form id="projection-form" class="panel" action="{% url 'projections' %}" method="post">
       {% csrf_token %}
       <label for="team-name">Team name (up to 20 characters)</label>
       <input class="team-input" id="team-name" name="team_name" type="text" maxlength="20" required>
-
       <label for="games-played">Number of games (1–7)</label>
       <input class="game-count" id="games-played" name="games_played" type="number" min="1" max="7" step="1" value="1" required>
-
       <h2>Game scores</h2>
       <div id="score-list" class="score-list"></div>
-      <div class="actions">
-        <button id="submit-button" type="submit">Calculate projection</button>
-      </div>
+      <p><button id="submit-button" type="submit">Calculate projection</button></p>
       <p id="form-error" class="error" role="alert" aria-live="assertive"></p>
     </form>
-
     <section aria-live="polite" aria-label="Projection results">
       <h2>Projection results</h2>
       <p id="empty-results" class="empty">Your calculated team projections will appear here.</p>
       <div id="team-results"></div>
     </section>
   </main>
-
   <script>
     const form = document.getElementById("projection-form");
     const gamesInput = document.getElementById("games-played");
@@ -91,15 +76,15 @@
         const label = document.createElement("label");
         label.htmlFor = `score-${game}`;
         label.textContent = `Game ${game}`;
-        const input = document.createElement("input");
-        input.id = `score-${game}`;
-        input.name = "scores";
-        input.type = "number";
-        input.min = "0";
-        input.step = "1";
-        input.required = true;
-        input.setAttribute("aria-label", `Game ${game} score`);
-        row.append(label, input);
+        const score = document.createElement("input");
+        score.id = `score-${game}`;
+        score.name = "scores";
+        score.type = "number";
+        score.min = "0";
+        score.step = "1";
+        score.required = true;
+        score.setAttribute("aria-label", `Game ${game} score`);
+        row.append(label, score);
         scoreList.appendChild(row);
       }
     }
@@ -123,8 +108,7 @@
           headers: { "X-Requested-With": "XMLHttpRequest" }
         });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Could not calculate the projection.");
-
+        if (!response.ok) throw new Error(data.error || "Projection request failed.");
         const card = document.createElement("article");
         card.className = "team-card";
         const heading = document.createElement("h3");
@@ -141,7 +125,7 @@
         results.prepend(card);
         emptyResults.hidden = true;
       } catch (error) {
-        errorMessage.textContent = error.message || "Could not calculate the projection. Please try again.";
+        errorMessage.textContent = error.message || "Could not calculate projection.";
       } finally {
         submitButton.disabled = false;
         submitButton.textContent = "Calculate projection";

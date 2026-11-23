@@ -44,4 +44,3 @@ def projections(request):
         "scores": scores,
         "projection": projection,
     })
-
