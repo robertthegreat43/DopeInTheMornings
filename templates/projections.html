@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Player Projections | Dope In The Mornings</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Arial, sans-serif;
+      background: #0d0d0d;
+      color: #f5f5f5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body { margin: 0; min-height: 100vh; }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 20px;
+      background: #111;
+      border-bottom: 2px solid #222;
+    }
+
+    nav a {
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: #28a745;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    nav a:hover, nav a:focus-visible { background: #34ce57; color: #000; }
+
+    main { width: min(1100px, 100%); margin: 0 auto; padding: 28px 20px; }
+    h1 { margin: 0 0 8px; }
+    .intro { color: #bbb; margin: 0 0 22px; }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    input, select, button {
+      min-height: 40px;
+      padding: 8px 12px;
+      border: 1px solid #444;
+      border-radius: 6px;
+      background: #1a1a1a;
+      color: inherit;
+      font: inherit;
+    }
+
+    input { flex: 1 1 240px; }
+    button { cursor: pointer; background: #28a745; border: 0; }
+    button:hover { background: #34ce57; color: #000; }
+
+    .status { min-height: 24px; color: #bbb; margin: 0 0 10px; }
+    .table-wrap { overflow-x: auto; border: 1px solid #333; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #292929; }
+    th { background: #171717; color: #9be7a7; }
+    tbody tr:hover { background: #171717; }
+    td:last-child, th:last-child { text-align: right; }
+    .empty { padding: 20px; color: #bbb; text-align: center; }
+
+    @media (max-width: 600px) {
+      main { padding: 22px 14px; }
+      th, td { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <nav aria-label="Main navigation">
+    <a href="/DopeInTheMornings/">NFL Dashboard</a>
+    <a href="/full_lineup/">ML Training</a>
+    <a href="/qb/">QB</a>
+    <a href="/rb/">RB</a>
+    <a href="/wr/">WR</a>
+    <a href="/te/">TE</a>
+    <a href="/dst/">DST</a>
+    <a href="/flex/">FLEX</a>
+    <a href="/nba_lines/">NBA Lineups</a>
+    <a href="/register/">Register</a>
+    <a href="/login/">Login</a>
+  </nav>
+
+  <main>
+    <h1>Player Projections</h1>
+    <p class="intro">Browse and sort the latest available player projections.</p>
+
+    <div class="toolbar">
+      <label for="search">Search players</label>
+      <input id="search" type="search" placeholder="Name, team, or position" autocomplete="off">
+      <label for="sort">Sort by</label>
+      <select id="sort">
+        <option value="projection">Projection (highest first)</option>
+        <option value="name">Name (A–Z)</option>
+        <option value="position">Position (A–Z)</option>
+        <option value="team">Team (A–Z)</option>
+      </select>
+      <button id="refresh" type="button">Refresh</button>
+    </div>
+
+    <p id="status" class="status" role="status" aria-live="polite">Loading projections…</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">Player</th><th scope="col">Position</th><th scope="col">Team</th><th scope="col">Projection</th></tr>
+        </thead>
+        <tbody id="players">
+          <tr><td class="empty" colspan="4">Loading projections…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const playersBody = document.getElementById("players");
+    const status = document.getElementById("status");
+    const search = document.getElementById("search");
+    const sort = document.getElementById("sort");
+    let players = [];
+
+    function renderPlayers() {
+      const query = search.value.trim().toLowerCase();
+      const filtered = players.filter(player =>
+        [player.name, player.position, player.team]
+          .some(value => String(value || "").toLowerCase().includes(query))
+      );
+      const key = sort.value;
+      filtered.sort((a, b) => key === "projection"
+        ? (Number(b.projection) || 0) - (Number(a.projection) || 0)
+        : String(a[key] || "").localeCompare(String(b[key] || ""))
+      );
+
+      playersBody.replaceChildren();
+      if (!filtered.length) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 4;
+        cell.className = "empty";
+        cell.textContent = players.length ? "No players match your search." : "No projection data available.";
+        row.appendChild(cell);
+        playersBody.appendChild(row);
+      } else {
+        filtered.forEach(player => {
+          const row = document.createElement("tr");
+          [player.name || "—", player.position || "—", player.team || "—"]
+            .forEach(value => {
+              const cell = document.createElement("td");
+              cell.textContent = value;
+              row.appendChild(cell);
+            });
+          const projection = document.createElement("td");
+          const value = Number(player.projection);
+          projection.textContent = Number.isFinite(value) ? value.toFixed(2) : "—";
+          row.appendChild(projection);
+          playersBody.appendChild(row);
+        });
+      }
+      status.textContent = `${filtered.length} of ${players.length} players`;
+    }
+
+    async function loadProjections() {
+      status.textContent = "Loading projections…";
+      try {
+        const response = await fetch("/get_players/?t=" + Date.now());
+        if (!response.ok) throw new Error(`Request failed (${response.status}).`);
+        const data = await response.json();
+        if (!Array.isArray(data)) throw new Error("Unexpected projection data format.");
+        players = data;
+        renderPlayers();
+      } catch (error) {
+        console.error("Projection loading error:", error);
+        playersBody.replaceChildren();
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 4;
+        cell.className = "empty";
+        cell.textContent = "Could not load projections. Please try again.";
+        row.appendChild(cell);
+        playersBody.appendChild(row);
+        status.textContent = error.message || "Projection data is unavailable.";
+      }
+    }
+
+    search.addEventListener("input", renderPlayers);
+    sort.addEventListener("change", renderPlayers);
+    document.getElementById("refresh").addEventListener("click", loadProjections);
+    loadProjections();
+  </script>
+</body>
+</html>
