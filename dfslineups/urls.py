@@ -5,7 +5,6 @@ from dfslineups import api_view, sports_news, views
 from dfslineups.lineup_api import (
     dope_dashboard,
     generate_nba_lines,
-    generate_nfl_lines,
     nba_dashboard,
 )
 from dfslineups.projections import projections
@@ -32,13 +31,12 @@ urlpatterns = [
     path("nba_lines/", nba_dashboard, name="nba_lines"),
     path("projections/", projections, name="projections"),
 
-    # Separate NFL and NBA generators
-    path("api/generatelines/", generate_nfl_lines, name="generatelines"),
+    # Separate NFL and NBA generators. NFL uses lineupgenrator.py through api_view.
+    path("api/generatelines/", api_view.generatelines, name="generatelines"),
     path("api/nba/generatelines/", generate_nba_lines, name="nba_generatelines"),
 
     # MLB generators
     path("mlb_lines/", views.mlb_dashboard, name="mlb_lines"),
-    
 
     # Router must be below custom endpoints
     path("", include(router.urls)),
