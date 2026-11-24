@@ -39,6 +39,35 @@ class Player(models.Model):
         return f"{self.name} ({self.position})"
 
 
+class MLBPlayer(models.Model):
+    """MLB DFS pool, kept separate from the NFL/NBA Player table."""
+    dk_id = models.CharField(max_length=50, null=True, blank=True)
+    name = models.CharField(max_length=100)
+    position = models.CharField(max_length=20)
+    team = models.CharField(max_length=20, blank=True)
+    salary = models.IntegerField(default=0)
+    projection = models.FloatField(default=0.0)
+    status = models.CharField(max_length=50, blank=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.position})"
+
+
+class TennisPlayer(models.Model):
+    """Tennis DFS pool; match_id enables DraftKings per-match roster limits."""
+    dk_id = models.CharField(max_length=50, null=True, blank=True)
+    name = models.CharField(max_length=100)
+    position = models.CharField(max_length=20, blank=True)
+    team = models.CharField(max_length=50, blank=True)
+    match_id = models.CharField(max_length=100, blank=True)
+    salary = models.IntegerField(default=0)
+    projection = models.FloatField(default=0.0)
+    status = models.CharField(max_length=50, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 # ------------------------------------------------------------
 # Serialized Lineups (Training Data for Neural Network)
 # ------------------------------------------------------------

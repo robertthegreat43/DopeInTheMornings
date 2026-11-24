@@ -9,6 +9,11 @@ from dfslineups.lineup_api import (
 )
 from dfslineups.projections import projections
 from dfslineups.views import RegisterView, donations, get_position_breakdown, user_profile
+from dfslineups.sports_lineup_views import (
+    generate_mlb_lineup,
+    generate_tennis_lineup,
+    tennis_dashboard,
+)
 
 
 router = routers.DefaultRouter()
@@ -26,17 +31,18 @@ router.register(r"players/pf", views.PlayerViewSet, basename="powerforwards")
 router.register(r"players/center", views.PlayerViewSet, basename="centers")
 
 urlpatterns = [
-    # Frontend dashboards
+    # Dashboards
     path("DopeInTheMornings/", dope_dashboard, name="dope_in_the_mornings"),
     path("nba_lines/", nba_dashboard, name="nba_lines"),
+    path("mlb_lines/", views.mlb_dashboard, name="mlb_lines"),
+    path("tennis_lines/", tennis_dashboard, name="tennis_lines"),
     path("projections/", projections, name="projections"),
 
-    # Separate NFL and NBA generators. NFL uses lineupgenrator.py through api_view.
+    # Separate sport lineup APIs
     path("api/generatelines/", api_view.generatelines, name="generatelines"),
     path("api/nba/generatelines/", generate_nba_lines, name="nba_generatelines"),
-
-    # MLB generators
-    path("mlb_lines/", views.mlb_dashboard, name="mlb_lines"),
+    path("api/mlb/generatelines/", generate_mlb_lineup, name="mlb_generatelines"),
+    path("api/tennis/generatelines/", generate_tennis_lineup, name="tennis_generatelines"),
 
     # Router must be below custom endpoints
     path("", include(router.urls)),
@@ -72,7 +78,6 @@ urlpatterns = [
     path("get_week_performance/", views.get_week_performance, name="get_week_performance"),
     path("get_players/", api_view.get_players, name="get_players"),
     path("get_position_breakdown/", get_position_breakdown, name="get_position_breakdown"),
-    # Keep the existing endpoint for the NFL dashboard and provide a separate NBA feed.
     path("get_sports_news/", sports_news.get_nfl_news, name="get_sports_news"),
     path("get_nba_news/", sports_news.get_nba_news, name="get_nba_news"),
     path("nba_news/", sports_news.get_nba_ticker, name="nba_news"),

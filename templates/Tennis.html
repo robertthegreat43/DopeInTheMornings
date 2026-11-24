@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dope In The Mornings - Tennis DFS</title>
+  <style>
+    body { margin: 0; padding: 24px; background: #0d0d0d; color: #fff; font-family: Arial, sans-serif; }
+    nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+    nav a, button { color: #fff; background: #247a43; border: 0; border-radius: 6px; padding: 10px 14px; text-decoration: none; cursor: pointer; }
+    button:disabled { opacity: .6; cursor: wait; }
+    main { max-width: 760px; margin: auto; }
+    #results { margin-top: 20px; }
+    .card { background: #171717; border: 1px solid #333; border-radius: 8px; padding: 18px; }
+    .row { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; border-bottom: 1px solid #333; }
+    .row:last-child { border-bottom: 0; }
+    .error { color: #ff8585; }
+  </style>
+</head>
+<body>
+  <nav aria-label="Sports dashboards">
+    <a href="/DopeInTheMornings/">NFL</a>
+    <a href="/nba_lines/">NBA</a>
+    <a href="/mlb_lines/">MLB</a>
+    <a href="/tennis_lines/">Tennis</a>
+    <a href="/logout/">Logout</a>
+  </nav>
+  <main>
+    <h1>Tennis DraftKings Lineups</h1>
+    <p>Generates six players under the $50,000 cap, with no more than four players from one match when match IDs are provided.</p>
+    <button id="generate" type="button">Generate Tennis Lineup</button>
+    <div id="results" aria-live="polite"></div>
+  </main>
+  <script>
+    const button = document.getElementById("generate");
+    const results = document.getElementById("results");
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      results.textContent = "Generating lineup…";
+      try {
+        const response = await fetch("/api/tennis/generatelines/");
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Lineup generation failed.");
+        const card = document.createElement("section");
+        card.className = "card";
+        const summary = document.createElement("p");
+        summary.textContent = `Salary: $${data.total_salary} | Projection: ${data.total_projection}`;
+        card.appendChild(summary);
+        for (const player of data.players || []) {
+          const row = document.createElement("div");
+          row.className = "row";
+          const name = document.createElement("span");
+          name.textContent = player.name;
+          const details = document.createElement("span");
+          details.textContent = `$${player.salary} | ${player.projection}`;
+          row.append(name, details);
+          card.appendChild(row);
+        }
+        results.replaceChildren(card);
+      } catch (error) {
+        const message = document.createElement("p");
+        message.className = "error";
+        message.textContent = error.message || "Could not reach tennis lineup service.";
+        results.replaceChildren(message);
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
